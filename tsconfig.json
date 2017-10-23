@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+      "rootDir": ".",
+      "outDir": "dist", // output directory
+      "target": "es2017", // node v7.6.0+, set to es2015 if you're using earlier versions
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "emitDecoratorMetadata": true,
+      "experimentalDecorators": true,
+      "sourceMap": true, // generate js maps for debugging
+      "typeRoots": [
+        // list of directories that contain custom type definitions
+        "./typings"
+      ]
+    },
+    "include": [
+      "src/**/**.ts", // transpile every file inside src directory
+      "app.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  }
