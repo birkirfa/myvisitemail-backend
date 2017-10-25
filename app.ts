@@ -1,6 +1,6 @@
-import * as Express from 'express'
+import * as Express from 'express';
 import { DbConfig } from './config/db';
-import { MongoClient } from 'mongodb'
+import * as MongoClient from 'mongoose';
 import { RoutesManager } from './src/routes/routes';
 
 const bodyParser = require('body-parser');
@@ -21,13 +21,19 @@ app.use((req: Express.Request, res: Express.Response, next: Express.NextFunction
     next();
 })
 
-MongoClient.connect(db.mongoUrl, (error, database) => {
-    if (error) { return console.log(error); }
-
-    let routes = new RoutesManager(app, router, database);
-    routes.registerAll();
-
+MongoClient.connect(db.mongoUrl, {useMongoClient: true}, function (err, res) {
     app.listen(port, () => {
-        console.log(`Ready on port ${port}!`);
-    })
-})
+        console.log(`Mongo db connected and were flying on port: ${port}!`);
+    });
+});
+
+const routes = new RoutesManager(app, router);
+routes.registerAll();
+
+app.get('/', (req, res) => {
+    if (MongoClient.connections[0]._readyState === 1) {
+        res.status(200).send('Connected to: ' + MongoClient.connections[0].host);
+    } else {
+        res.status(500).send('MongoDB is DOWN');
+    }
+});

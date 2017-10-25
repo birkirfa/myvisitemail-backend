@@ -5,8 +5,9 @@
   "main": "app.js",
   "scripts": {
     "tsc-watch": "tsc --watch",
-    "build": "tsc",
-    "start": "node dist/app.js"
+    "compile": "tsc",
+    "start": "node dist/app.js",
+    "compileAndRun": "tsc && node dist/app.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "dependencies": {
     "express": "^4.16.2",
     "mongodb": "^2.2.33",
+    "mongoose": "*",
     "@types/body-parser": "^1.16.4",
     "@types/cors": "^2.8.1",
     "body-parser": "^1.17.2",
