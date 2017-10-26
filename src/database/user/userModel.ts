@@ -3,7 +3,7 @@ var Schema = MongoClient.Schema;
 
 export class UserModel {
     /*
-     * Basic userSchema definition
+     * Basic userSchema definition test
      */
     private user = {
         firstName : String,
