@@ -13,6 +13,9 @@ export class UserDao extends GenericDao {
         return new Promise ((resolve, reject) => {
             self.querySingle({'eMail': eMail})
                 .then(function (user) {
+                    if (!user) {
+                        reject ('Wrong credentials.');
+                    }
                     user.comparePassword(password)
                         .then((match) => {
                             if (match) {

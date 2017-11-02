@@ -24,7 +24,7 @@ export class UserModel extends BaseModel{
             },
             eMail : {
                 type: String,
-                required: true,
+                required: true
             }
         }));
 

@@ -24,8 +24,8 @@ export class UserRoute {
 
         this.router.post('/', jsonParser, (req, res) => {
             let createData = req.body;
-            if (Object.keys(createData).length) {
-                dao.create(createData)
+            if (Object.keys(createData).length && createData.eMail) {
+                dao.createWithUniqueCheck(createData, {'eMail': createData.eMail})
                     .then(function (response) {
                         res.status(200).json(response);
                     })
@@ -33,7 +33,7 @@ export class UserRoute {
                         res.status(500).json(error);
                     })
             } else {
-                res.status(400).json('Insufficient data.');
+                res.status(400).send('Insufficient data.');
             }
         });
 
@@ -53,7 +53,7 @@ export class UserRoute {
                         res.status(500).json(error);
                     })
             } else {
-                res.status(400).json('Insufficient data.');
+                res.status(400).send('Insufficient data.');
             }
         });
 
@@ -67,7 +67,7 @@ export class UserRoute {
                                 res.status(200).json(logged);
                             })
                             .catch((error) => {
-                                res.status(500).json(error);
+                                res.status(500).send(error || 'Wrong credentials.');
                             });
                     } else {
                         res.status(400).send('eMail is required');

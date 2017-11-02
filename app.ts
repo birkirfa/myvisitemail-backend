@@ -47,7 +47,7 @@ app.all('/*', cors(options), (req, res, next) => {
     if (req.headers['origin'] && whiteList.isAllowed(req.headers['origin'])) {
         next ();
     } else {
-        res.status(500).send('Authorization failure');
+        res.status(401).send('Authorization failure');
     }
 });
 
