@@ -6,11 +6,26 @@ export class UserModel extends BaseModel{
 
     constructor (schemaObj) {
         super((schemaObj || {
-            firstName : String,
-            lastName : String,
-            password : String,
-            isAdmin : Boolean,
-            eMail : String
+            firstName : {
+                type: String,
+                required: true,
+            },
+            lastName : {
+                type: String,
+                required: true,
+            },
+            password : {
+                type: String,
+                required: true,
+            },
+            isAdmin : {
+                type: Boolean,
+                required: true,
+            },
+            eMail : {
+                type: String,
+                required: true,
+            }
         }));
 
         this.getSchema().pre('save', function(next) {

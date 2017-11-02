@@ -8,7 +8,7 @@ export class UserDao extends GenericDao {
         super (user.getSchema(), 'users');
     }
 
-    public canLogin (eMail, password) {
+    public login (eMail, password) {
         var self= this;
         return new Promise ((resolve, reject) => {
             self.querySingle({'eMail': eMail})
@@ -16,7 +16,7 @@ export class UserDao extends GenericDao {
                     user.comparePassword(password)
                         .then((match) => {
                             if (match) {
-                                resolve(match);
+                                resolve(user);
                             } else {
                                 reject('Wrong credentials.');
                             }
