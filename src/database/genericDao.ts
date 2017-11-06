@@ -48,7 +48,8 @@ export class GenericDao {
                 .then(function (item) {
                     for (let key in updateData) {
                         if (!item[key]) {
-                            reject('Attempted to update a non existeny property.')
+                            reject('Attempted to update a non existeny property.');
+                            return;
                         }
                     }
                     item.set(updateData);
