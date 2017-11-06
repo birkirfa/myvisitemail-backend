@@ -26,11 +26,32 @@ export class GenericDao {
         });
     }
 
+    public createWithUniqueCheck (createData, queryObj) {
+        return new Promise ((resolve, reject) => {
+            this.querySingle(queryObj)
+                .then((response) => {
+                    if (response) {
+                        reject('Key duplication detected');
+                    } else {
+                        let obj = new this.Model(createData);
+                        obj.save().then(resolve).catch(reject);
+                    }
+                })
+                .catch(reject);
+        });
+    }
+
     public update (itemId, updateData) {
         let self = this;
         return new Promise ((resolve, reject) => {
             self.Model.findById(itemId)
                 .then(function (item) {
+                    for (let key in updateData) {
+                        if (!item[key]) {
+                            reject('Attempted to update a non existeny property.');
+                            return;
+                        }
+                    }
                     item.set(updateData);
                     item.save().then(resolve).catch(reject);
                 })
