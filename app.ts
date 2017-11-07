@@ -3,15 +3,12 @@ import { DbConfig } from './config/db';
 import * as MongoClient from 'mongoose';
 import * as cors from "cors";
 import { WhiteList } from './src/routes/whiteList';
-import { UserRoute } from './src/routes/user-route';
-import { FilesRoute } from './src/routes/files-route';
 import { RoutesManager } from './src/routes/routes';
 
 const bodyParser = require('body-parser');
 const port: number = 8000;
 const app: Express.Application = Express();
 const db: DbConfig = new DbConfig();
-// const router: Express.Router = Express.Router();
 const whiteList = new WhiteList();
 
 const options: cors.CorsOptions = {
