@@ -1,7 +1,7 @@
 import * as MongoClient from 'mongoose'
 
 export class GenericDao {
-    private Model;
+    private Model: MongoClient.Model<any>;
 
     constructor (schema, modelName) {
         this.Model = MongoClient.model(modelName, schema);
@@ -19,15 +19,16 @@ export class GenericDao {
         return this.Model.findOne(queryObj);
     }
 
-    public create (createData) {
+    public create (createData): Promise<any> {
         let obj = new this.Model(createData);
-        return new Promise ((resolve, reject) => {
+        
+        return new Promise<any> ((resolve, reject) => {
             obj.save().then(resolve).catch(reject);
         });
     }
 
-    public createWithUniqueCheck (createData, queryObj) {
-        return new Promise ((resolve, reject) => {
+    public createWithUniqueCheck (createData, queryObj): Promise<any> {
+        return new Promise<any> ((resolve, reject) => {
             this.querySingle(queryObj)
                 .then((response) => {
                     if (response) {
@@ -41,9 +42,9 @@ export class GenericDao {
         });
     }
 
-    public update (itemId, updateData) {
+    public update (itemId, updateData): Promise<any> {
         let self = this;
-        return new Promise ((resolve, reject) => {
+        return new Promise<any> ((resolve, reject) => {
             self.Model.findById(itemId)
                 .then(function (item) {
                     for (let key in updateData) {
