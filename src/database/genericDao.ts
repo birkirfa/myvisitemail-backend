@@ -20,9 +20,9 @@ export class GenericDao {
     }
 
     public create (createData): Promise<any> {
-        let obj = new this.Model(createData);
-        
         return new Promise<any> ((resolve, reject) => {
+            const obj = new this.Model(createData);
+            
             obj.save().then(resolve).catch(reject);
         });
     }
