@@ -1,5 +1,6 @@
 import { BaseModel } from '../baseModel';
 import * as bcrypt from 'bcrypt';
+import * as MongoClient from 'mongoose';
 const SALT_WORK_FACTOR = 10;
 
 export class UserModel extends BaseModel{
@@ -25,11 +26,15 @@ export class UserModel extends BaseModel{
             eMail : {
                 type: String,
                 required: true
+            },
+            avatarId: {
+                type: MongoClient.Schema.Types.ObjectId,
+                required: true
             }
         }));
 
         this.getSchema().pre('save', function(next) {
-            var user = this;
+            const user = this;
 
             // only hash the password if it has been modified (or is new)
             if (!user.isModified('password')) return next();
@@ -65,4 +70,13 @@ export class UserModel extends BaseModel{
             });
         };
     }
+}
+
+export interface IUser {
+    firstName: string,
+    lastName: string,
+    password: string,
+    isAdmin: boolean,
+    eMail: string,
+    avatar: any;
 }

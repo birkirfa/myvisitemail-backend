@@ -1,22 +1,15 @@
 import * as Express from 'express';
-// import { Db } from 'mongodb'
 
-import { IRoute } from '../models/routes-models';
-import { AuthRoutes } from './auth-routes';
+import { UserRoute } from './user-route';
+import { FilesRoute } from './files-route';
 
 export class RoutesManager {
-    myRoutes: IRoute[];
 
-    constructor(private app: Express.Application, private router:Express.Router){
-        //import and init all routes
-        this.myRoutes = [
-            new AuthRoutes(app, router)
-        ];
+    constructor(private app: Express.Application){
     }
 
     registerAll(){
-        this.myRoutes.forEach(route => {
-            route.register();
-        })
+        this.app.use('/', new UserRoute().router);
+        this.app.use('/file', new FilesRoute().router);
     }
 }

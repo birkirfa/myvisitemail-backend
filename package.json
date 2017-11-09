@@ -26,6 +26,7 @@
     "@types/body-parser": "^1.16.4",
     "@types/cors": "^2.8.1",
     "@types/mocha": "^2.2.44",
+    "@types/mongoose": "^4.7.25",
     "bcrypt": "*",
     "body-parser": "^1.17.2",
     "cors": "^2.8.4",
