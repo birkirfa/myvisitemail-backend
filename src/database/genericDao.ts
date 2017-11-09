@@ -3,32 +3,38 @@ import * as MongoClient from 'mongoose'
 export class GenericDao {
     private Model: MongoClient.Model<any>;
 
-    constructor (schema, modelName) {
-        this.Model = MongoClient.model(modelName, schema);
+    constructor(schema, modelName) {
+        try {
+            if (MongoClient.model(modelName)) {
+                this.Model = MongoClient.model(modelName);
+            }
+        } catch (e) {
+            this.Model = MongoClient.model(modelName, schema);
+        }
     }
 
-    public getModel () {
+    public getModel() {
         return this.Model;
     }
 
-    public getAll () {
+    public getAll() {
         return this.Model.find({}).exec();
     }
 
-    public querySingle (queryObj) {
+    public querySingle(queryObj) {
         return this.Model.findOne(queryObj);
     }
 
-    public create (createData): Promise<any> {
-        return new Promise<any> ((resolve, reject) => {
+    public create(createData): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             const obj = new this.Model(createData);
-            
+
             obj.save().then(resolve).catch(reject);
         });
     }
 
-    public createWithUniqueCheck (createData, queryObj): Promise<any> {
-        return new Promise<any> ((resolve, reject) => {
+    public createWithUniqueCheck(createData, queryObj): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
             this.querySingle(queryObj)
                 .then((response) => {
                     if (response) {
@@ -42,9 +48,9 @@ export class GenericDao {
         });
     }
 
-    public update (itemId, updateData): Promise<any> {
+    public update(itemId, updateData): Promise<any> {
         let self = this;
-        return new Promise<any> ((resolve, reject) => {
+        return new Promise<any>((resolve, reject) => {
             self.Model.findById(itemId)
                 .then(function (item) {
                     for (let key in updateData) {
@@ -60,7 +66,7 @@ export class GenericDao {
         });
     }
 
-    public remove (itemId) {
-        return this.Model.findOneAndRemove({_id: itemId}).exec();
+    public remove(itemId) {
+        return this.Model.findOneAndRemove({ _id: itemId }).exec();
     }
 }

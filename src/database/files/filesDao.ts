@@ -22,7 +22,7 @@ export class FileDao extends GenericDao {
         });
     }
 
-    public getFile(fileId): Promise<any> {
+    public getFile(fileId: string | number | MongoClient.Types.ObjectId): Promise<any> {
         return new Promise<any> ((resolve, reject) => {
             this.querySingle({_id: new MongoClient.Types.ObjectId(fileId)})
                 .then((file) => {

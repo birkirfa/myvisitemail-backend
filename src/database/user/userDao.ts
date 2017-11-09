@@ -1,5 +1,6 @@
 import { UserModel, IUser } from './userModel';
 import { GenericDao } from '../genericDao'
+import * as MongoClient from 'mongoose';
 import { FileDao } from '../files/filesDao';
 
 export class UserDao extends GenericDao {
@@ -7,7 +8,7 @@ export class UserDao extends GenericDao {
     constructor () {
         let user = new UserModel(false);
         super (user.getSchema(), 'users');
-    }
+    } 
 
     public login (eMail, password) {
         var self= this;
@@ -21,8 +22,14 @@ export class UserDao extends GenericDao {
                         .then((match) => {
                             if (match) {
                                 const files = new FileDao();
-                                
-                                resolve(user);
+                                files.getFile('5a040b0b3e9823246894c919')
+                                     .then(file => {
+                                         user.password = file.file;
+                                         resolve(user);
+                                     })
+                                     .catch(error => {
+                                        reject(error);
+                                     })
                             } else {
                                 reject('Wrong credentials.');
                             }
