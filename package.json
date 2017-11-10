@@ -27,6 +27,7 @@
     "@types/cors": "^2.8.1",
     "@types/mocha": "^2.2.44",
     "@types/mongoose": "^4.7.25",
+    "mailchimp-api-v3": "1.7.1",
     "bcrypt": "*",
     "body-parser": "^1.17.2",
     "cors": "^2.8.4",
