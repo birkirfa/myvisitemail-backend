@@ -6,22 +6,34 @@ export class MailchimpDao {
 
     constructor (apiKey:string) {
         this.mailchimp = new Mailchimp(apiKey || this.mailchimpApiKey);
-        var today = new Date();
-        today.setHours(16);
-        today.setMinutes(45);
-        this.createAndScheduleCampaign ({
-            recipients: {
-                list_id: '8d998c5b10'
-            },
-            type: 'regular',
-            settings: {
-                title: "Mailchimp api test",
-                template_id: 1309,
-                from_name: 'Jacek',
-                reply_to: 'jacek.bednarczyk.softiti@gmail.com',
-                subject_line: 'Mailchimp api test'
-            }
-        }, today);
+        // var today = new Date();
+        // today.setHours(16);
+        // today.setMinutes(45);
+        // this.createAndScheduleCampaign ({
+        //     recipients: {
+        //         list_id: '8d998c5b10'
+        //     },
+        //     type: 'regular',
+        //     settings: {
+        //         title: "Mailchimp api test",
+        //         template_id: 1309,
+        //         from_name: 'Jacek',
+        //         reply_to: 'jacek.bednarczyk.softiti@gmail.com',
+        //         subject_line: 'Mailchimp api test'
+        //     }
+        // }, today);
+    }
+
+    public isComplete (campaign) {
+        if (campaign.settings
+            && campaign.settings.title
+            && campaign.settings.template_id
+            && campaign.settings.from_name
+            && campaign.settings.reply_to
+            && campaign.settings.subject_line) {
+            return true;
+        }
+        return false;
     }
 
     public getLists () {
@@ -38,6 +50,14 @@ export class MailchimpDao {
 
     public getAutomations () {
         return this.mailchimp.get('/automations');
+    }
+
+    public createList (listObject: Object) {
+        return this.mailchimp.post('/lists', listObject)
+    }
+
+    public updateList (listId: string, listObject: Object) {
+        return this.mailchimp.patch('/lists/' + listId, listObject);
     }
 
     /**
@@ -58,7 +78,7 @@ export class MailchimpDao {
     }
      */
     public createCampaign(campaign: Object) {
-        return this.mailchimp.post('/campaigns', campaign)
+        return this.mailchimp.post('/campaigns', campaign);
     }
 
     public updateCampaign (campaignUpdate: Object, campaignId: string) {
@@ -78,15 +98,21 @@ export class MailchimpDao {
      *                      + unschedule
      */
     public performCampaignAction (campaignId: string, action:string, options: object) {
+        let scheduleDate;
+        if (action === 'schedule') {
+            try {
+                scheduleDate = new Date(options['schedule_time']);
+                this.setScheduleMinutes(scheduleDate);
+                options['schedule_time'] = scheduleDate;
+            } catch (error) {
+                    console.error(error);
+                throw (error);
+            }
+        }
         return this.mailchimp.post('/campaigns/' + campaignId + '/actions/' + action, options)
     }
 
-    /**
-     * {"schedule_time":"2017-02-04T19:13:00+00:00","timewarp":"false","batch_delay":"false"}
-     * @param {Object} campaignObject
-     * @param {Date} date
-     */
-    public createAndScheduleCampaign (campaignObject: Object, date: Date) {
+    private setScheduleMinutes (date: Date) {
         let minutes = date.getMinutes();
         let hours = date.getHours();
         let toCheck = minutes % 15;
@@ -99,6 +125,15 @@ export class MailchimpDao {
             }
             date.setMinutes((minutes + 15 - toCheck));
         }
+    }
+
+    /**
+     * {"schedule_time":"2017-02-04T19:13:00+00:00","timewarp":"false","batch_delay":"false"}
+     * @param {Object} campaignObject
+     * @param {Date} date
+     */
+    public createAndScheduleCampaign (campaignObject: Object, date: Date) {
+        this.setScheduleMinutes(date);
 
         this.createCampaign(campaignObject)
             .then(createdCampaign => {
@@ -112,6 +147,10 @@ export class MailchimpDao {
                     console.error(err);
                 })
             })
+    }
+
+    public deleteCampaign (campaignId: string) {
+        return this.mailchimp.delete('/campaigns/' + campaignId);
     }
 
     public getReports () {

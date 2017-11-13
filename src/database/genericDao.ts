@@ -4,7 +4,11 @@ export class GenericDao {
     private Model: MongoClient.Model<any>;
 
     constructor (schema, modelName) {
-        this.Model = MongoClient.model(modelName, schema);
+        try {
+            this.Model = MongoClient.model(modelName);
+        } catch (error) {
+            this.Model = MongoClient.model(modelName, schema);
+        }
     }
 
     public getModel () {
