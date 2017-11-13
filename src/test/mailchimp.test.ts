@@ -49,7 +49,7 @@ describe ('/mailchimp API endpoint', () => {
                     expect(response).to.not.eql(null);
                     expect(response.statusCode).to.eql(200);
                     expect(response.body).to.be.an('array');
-                    expect(response.body.length).to.be.greaterThan(0);
+                    expect(response.body.length).to.not.be.lessThan(0);
                     done();
                 });
         });
@@ -62,7 +62,7 @@ describe ('/mailchimp API endpoint', () => {
                     expect(response).to.not.eql(null);
                     expect(response.statusCode).to.eql(200);
                     expect(response.body).to.be.an('array');
-                    expect(response.body.length).to.be.greaterThan(0);
+                    expect(response.body.length).to.not.be.lessThan(0);
                     done();
                 });
         });
@@ -75,7 +75,7 @@ describe ('/mailchimp API endpoint', () => {
                     expect(response).to.not.eql(null);
                     expect(response.statusCode).to.eql(200);
                     expect(response.body).to.be.an('array');
-                    expect(response.body.length).to.be.greaterThan(0);
+                    expect(response.body.length).to.not.be.lessThan(0);
                     done();
                 });
         });
