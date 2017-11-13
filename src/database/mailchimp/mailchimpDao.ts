@@ -6,22 +6,6 @@ export class MailchimpDao {
 
     constructor (apiKey:string) {
         this.mailchimp = new Mailchimp(apiKey || this.mailchimpApiKey);
-        // var today = new Date();
-        // today.setHours(16);
-        // today.setMinutes(45);
-        // this.createAndScheduleCampaign ({
-        //     recipients: {
-        //         list_id: '8d998c5b10'
-        //     },
-        //     type: 'regular',
-        //     settings: {
-        //         title: "Mailchimp api test",
-        //         template_id: 1309,
-        //         from_name: 'Jacek',
-        //         reply_to: 'jacek.bednarczyk.softiti@gmail.com',
-        //         subject_line: 'Mailchimp api test'
-        //     }
-        // }, today);
     }
 
     public isComplete (campaign) {
@@ -44,7 +28,7 @@ export class MailchimpDao {
         return this.mailchimp.get('/lists/' + listId);
     }
 
-    public getCampaigns() {
+    public getCampaigns () {
         return this.mailchimp.get('/campaigns')
     }
 
@@ -160,13 +144,4 @@ export class MailchimpDao {
     public getReportsByCampaignId (campaignId: string) {
         return this.mailchimp.get('/reports/' + campaignId);
     }
-    /*
-    Think about templates wheter well be getting them or storing and creating new ones
-    tommorrows testing schedule
-        Setup recipient list
-        Create campaign
-        send and schedule campaign
-        replicate campaign
-        send and schedule replicated campaign
-     */
 }
