@@ -49,7 +49,7 @@ export class FilesRoute {
                 
                 dao.createFile(file)
                     .then(file => {
-                        res.status(201).json('File created.');
+                        res.status(201).json(file);
                     })
                     .catch(error => {
                         res.status(500).json(error);

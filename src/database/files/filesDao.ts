@@ -46,6 +46,10 @@ export class FileDao extends GenericDao {
     
     public updateFile(file: IFile): Promise<any> {
         return new Promise ((resolve, reject) => {
+            if (typeof file._id === 'string'){
+                file._id = MongoClient.Types.ObjectId(file._id);
+                console.log(file._id);
+            }
             this.update(file._id, file)
                 .then(result => resolve(result))
                 .catch(error => reject(error));

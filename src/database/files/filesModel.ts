@@ -29,7 +29,7 @@ export enum FileType {
 }
 
 export interface IFile {
-    _id: MongoClient.Types.ObjectId;
+    _id: MongoClient.Types.ObjectId | string;
     type: FileType;
     file: any;
     contentType: string;

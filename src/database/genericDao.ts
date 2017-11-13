@@ -5,9 +5,7 @@ export class GenericDao {
 
     constructor(schema, modelName) {
         try {
-            if (MongoClient.model(modelName)) {
-                this.Model = MongoClient.model(modelName);
-            }
+            this.Model = MongoClient.model(modelName);
         } catch (e) {
             this.Model = MongoClient.model(modelName, schema);
         }
