@@ -51,24 +51,22 @@ describe ('/file API endpoint', () => {
             superAgent.post('http://localhost:8000/file')
                 .set('origin', whitListedUrl)
                 .end(function(error, response) {
-                    expect(error).to.eql(null);
+                    expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
                     expect(response.status).to.eql(400);
-                    expect(response.body).to.be.an('array');
-                    expect(response.body.length).to.be.greaterThan(0);
+                    expect(response.text).to.eql('No file presented in request.');
                     done();
                 });
         });
         it ('Returns 201 (Created) when request is made from a whiteListed origin', (done) => {
             superAgent.post('http://localhost:8000/file')
-                
                 .set('origin', whitListedUrl)
+                .set('Content-Type', 'application/json')
+                .send({ _id: null, file: 'test', contentType: 'test', fileType: 5 })
                 .end(function(error, response) {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
                     expect(response.status).to.eql(201);
-                    expect(response.body).to.be.an('array');
-                    expect(response.body.length).to.be.greaterThan(0);
                     done();
                 });
         });
@@ -76,14 +74,15 @@ describe ('/file API endpoint', () => {
     
     describe ('PUT /file', () => {
         it ('Returns 200 when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/file')
+            // todo: provide proper idToBeUpdated
+            const idToBeUpdated = ''
+            superAgent.put('http://localhost:8000/file')
+                .send({ _id: idToBeUpdated, file: 'test', contentType: 'test', fileType: 5 })
                 .set('origin', whitListedUrl)
                 .end(function(error, response) {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
                     expect(response.status).to.eql(200);
-                    expect(response.body).to.be.an('array');
-                    expect(response.body.length).to.be.greaterThan(0);
                     done();
                 });
         });
@@ -91,14 +90,14 @@ describe ('/file API endpoint', () => {
     
     describe ('DELETE /file', () => {
         it ('Returns 200 when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/file')
+            const idToBeDeleted: string = '5a03173c3e9823246894c917'; // todo: provide proper id
+            
+            superAgent.delete('http://localhost:8000/file/' + idToBeDeleted)
                 .set('origin', whitListedUrl)
                 .end(function(error, response) {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
                     expect(response.status).to.eql(200);
-                    expect(response.body).to.be.an('array');
-                    expect(response.body.length).to.be.greaterThan(0);
                     done();
                 });
         });

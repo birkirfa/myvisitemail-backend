@@ -1,4 +1,4 @@
-import { FileModel, IFile } from './filesModel';
+import { FileModel, IFile, FileType } from './filesModel';
 import { GenericDao } from '../genericDao'
 import * as MongoClient from 'mongoose';
 
@@ -36,6 +36,20 @@ export class FileDao extends GenericDao {
         });
     }
     
+    public getFilesByType(type: FileType): Promise<any> {
+        return new Promise<any> ((resolve, reject) => {
+            this.querySingle({ type: type})
+                .then((file) => {
+                    if (!file) {
+                        reject ('File not found');
+                    } else {
+                        resolve(file);
+                    }
+                })
+                .catch(error => reject(error));
+        });
+    }
+    
     public createFile(file: IFile): Promise<any> {
         return new Promise ((resolve, reject) => {
             this.create(file)
@@ -48,7 +62,6 @@ export class FileDao extends GenericDao {
         return new Promise ((resolve, reject) => {
             if (typeof file._id === 'string'){
                 file._id = MongoClient.Types.ObjectId(file._id);
-                console.log(file._id);
             }
             this.update(file._id, file)
                 .then(result => resolve(result))

@@ -25,7 +25,8 @@ export enum FileType {
     Image = 1,
     Video = 2,
     Document = 3,
-    Other = 4
+    Other = 4,
+    TestFile = 5
 }
 
 export interface IFile {
