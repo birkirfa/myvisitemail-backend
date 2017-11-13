@@ -10,7 +10,8 @@
       "sourceMap": true, // generate js maps for debugging
       "typeRoots": [
         // list of directories that contain custom type definitions
-        "./typings"
+        "./typings",
+        "node_modules/@types/*"
       ]
     },
     "include": [
