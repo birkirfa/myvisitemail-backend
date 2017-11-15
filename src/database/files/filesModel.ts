@@ -1,8 +1,8 @@
 import { BaseModel } from '../baseModel';
 import * as MongoClient from 'mongoose';
 
-export class FileModel extends BaseModel{
-    constructor (schemaObj) {
+export class FileModel extends BaseModel {
+    constructor(schemaObj) {
         super((schemaObj || {
             type: {
                 type: Number,

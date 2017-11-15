@@ -19,6 +19,10 @@ export class GenericDao {
         return this.Model.find({}).exec();
     }
 
+    public queryAll(queryObj) {
+        return this.Model.find(queryObj).exec();
+    }
+
     public querySingle(queryObj) {
         return this.Model.findOne(queryObj);
     }
