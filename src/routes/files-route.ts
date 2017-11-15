@@ -2,6 +2,8 @@ import * as Express from 'express';
 import * as bodyParser from 'body-parser';
 import * as multer from 'multer';
 import * as cors from 'cors';
+import { v4 as uuidV4 } from 'uuid';
+
 import { FileDao } from '../database/files/filesDao';
 import { IFile, FileType } from '../database/files/filesModel';
 
@@ -51,6 +53,7 @@ export class FilesRoute {
             } else {
                 const file: IFile = {
                     _id: null,
+                    id: uuidV4(),
                     type: req.body.fileType,
                     file: req.body.file,
                     contentType: req.body.contentType
@@ -72,6 +75,7 @@ export class FilesRoute {
             } else {
                 const file: IFile = {
                     _id: null,
+                    id: req.body.id,
                     type: req.body.fileType,
                     file: req.body.file,
                     contentType: req.body.contentType
@@ -92,7 +96,7 @@ export class FilesRoute {
         });
 
         this.router.delete('/:fileId', (req, res) => {
-            dao.remove(req.params.fileId)
+            dao.deleteFile(req.params.fileId)
                 .then(file => {
                     res.status(204).end();
                 })

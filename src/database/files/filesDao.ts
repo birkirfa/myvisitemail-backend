@@ -71,7 +71,7 @@ export class FileDao extends GenericDao {
 
     public deleteFile(fileId: any) {
         return new Promise((resolve, reject) => {
-            this.remove(fileId)
+            this.removeByCustomId(fileId)
                 .then(result => resolve(result))
                 .catch(error => reject(error));
         });

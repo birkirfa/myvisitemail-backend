@@ -1,4 +1,4 @@
-import * as MongoClient from 'mongoose'
+import * as MongoClient from 'mongoose';
 
 export class GenericDao {
     private Model: MongoClient.Model<any>;
@@ -70,5 +70,9 @@ export class GenericDao {
 
     public remove(itemId) {
         return this.Model.findOneAndRemove({ _id: itemId }).exec();
+    }
+    
+    public removeByCustomId(itemId) {
+        return this.Model.findOneAndRemove({ id: itemId }).exec();
     }
 }

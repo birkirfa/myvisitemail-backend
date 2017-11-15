@@ -4,6 +4,10 @@ import * as MongoClient from 'mongoose';
 export class FileModel extends BaseModel {
     constructor(schemaObj) {
         super((schemaObj || {
+            id: {
+                type: String,
+                required: true
+            },
             type: {
                 type: Number,
                 required: true
@@ -31,6 +35,7 @@ export enum FileType {
 
 export interface IFile {
     _id: MongoClient.Types.ObjectId | string;
+    id: string;
     type: FileType;
     file: any;
     contentType: string;
