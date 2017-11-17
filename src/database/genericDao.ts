@@ -3,7 +3,7 @@ import * as MongoClient from 'mongoose';
 export class GenericDao {
     private Model: MongoClient.Model<any>;
 
-    constructor(schema, modelName) {
+    constructor (schema, modelName) {
         try {
             this.Model = MongoClient.model(modelName);
         } catch (error) {
