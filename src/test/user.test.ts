@@ -7,7 +7,7 @@ const dao = new UserDao();
 
 describe ('/user API endpoint', () => {
 
-    let whitListedUrl: String;
+    let whitListedUrl: string;
 
     let testUser: Object;
 
@@ -38,7 +38,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(401);
+                    expect(response.status).to.eql(401);
                     expect(response.text).to.eql('Authorization failure');
                     done();
                 });
@@ -50,7 +50,7 @@ describe ('/user API endpoint', () => {
                 .end(function(error, response) {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(200);
+                    expect(response.status).to.eql(200);
                     expect(response.body).to.be.an('array');
                     expect(response.body.length).to.be.greaterThan(0);
                     done();
@@ -64,7 +64,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(401);
+                    expect(response.status).to.eql(401);
                     expect(response.text).to.eql('Authorization failure');
                     done();
                 });
@@ -77,7 +77,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(400);
+                    expect(response.status).to.eql(400);
                     expect(response.text).to.eql('Insufficient data.');
                     done();
                 });
@@ -92,7 +92,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(500);
+                    expect(response.status).to.eql(500);
                     expect(response.body).to.have.property('errors');
                     expect(Object.keys(response.body.errors).length).to.eql(4);
                     done();
@@ -106,7 +106,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(200);
+                    expect(response.status).to.eql(200);
                     expect(response.body).to.have.property('_id');
                     expect(response.body).to.have.property('firstName');
                     expect(response.body.firstName).to.eql('test');
@@ -132,7 +132,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(200);
+                    expect(response.status).to.eql(200);
                     expect(response.body).to.have.property('_id');
                     expect(response.body).to.have.property('firstName');
                     expect(response.body.firstName).to.eql('test');
@@ -157,7 +157,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(500);
+                    expect(response.status).to.eql(500);
                     expect(response.text).to.eql('Wrong credentials.');
                     done();
                 })
@@ -173,7 +173,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(500);
+                    expect(response.status).to.eql(500);
                     expect(response.text).to.eql('Wrong credentials.');
                     done();
                 })
@@ -201,7 +201,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(400);
+                    expect(response.status).to.eql(400);
                     expect(response.text).to.eql('Insufficient data.');
                     done();
                 });
@@ -216,7 +216,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(500);
+                    expect(response.status).to.eql(500);
                     expect(response.text).to.eql('"Attempted to update a non existeny property."');
                     done();
                 });
@@ -232,7 +232,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(200);
+                    expect(response.status).to.eql(200);
                     expect(response.body).to.have.property('_id');
                     expect(response.body).to.have.property('firstName');
                     expect(response.body.firstName).to.eql('test1');
@@ -256,7 +256,7 @@ describe ('/user API endpoint', () => {
                 .end((error, response) => {
                     expect(error).to.eql(null);
                     expect(response).to.not.eql(null);
-                    expect(response.statusCode).to.eql(200);
+                    expect(response.status).to.eql(200);
                     done();
                 })
         });

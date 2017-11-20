@@ -1,9 +1,13 @@
 import { BaseModel } from '../baseModel';
 import * as MongoClient from 'mongoose';
 
-export class FileModel extends BaseModel{
-    constructor (schemaObj) {
+export class FileModel extends BaseModel {
+    constructor(schemaObj) {
         super((schemaObj || {
+            id: {
+                type: String,
+                required: true
+            },
             type: {
                 type: Number,
                 required: true
@@ -25,11 +29,13 @@ export enum FileType {
     Image = 1,
     Video = 2,
     Document = 3,
-    Other = 4
+    Other = 4,
+    TestFile = 5
 }
 
 export interface IFile {
-    _id: MongoClient.Types.ObjectId;
+    _id: MongoClient.Types.ObjectId | string;
+    id: string;
     type: FileType;
     file: any;
     contentType: string;

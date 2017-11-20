@@ -1,15 +1,20 @@
 import * as Express from 'express';
-import * as bodyParser from'body-parser';
-import * as cors from "cors";
+import * as bodyParser from 'body-parser';
+import * as multer from 'multer';
+import * as cors from 'cors';
+import { v4 as uuidV4 } from 'uuid';
+
 import { FileDao } from '../database/files/filesDao';
 import { IFile, FileType } from '../database/files/filesModel';
+
 const jsonParser = bodyParser.json();
+const formParser = multer();
 const dao = new FileDao();
 
 export class FilesRoute {
     router: Express.Router;
 
-    constructor () {
+    constructor() {
         this.router = Express.Router();
 
         this.router.get('/', jsonParser, (req, res) => {
@@ -19,9 +24,9 @@ export class FilesRoute {
                 })
                 .catch(error => {
                     res.status(500).json(error);
-                })
-            });
-            
+                });
+        });
+
         this.router.get('/:fileId', jsonParser, (req, res) => {
             dao.getFile(req.params.fileId)
                 .then(file => {
@@ -29,44 +34,61 @@ export class FilesRoute {
                 })
                 .catch(error => {
                     res.status(500).json(error);
-                })
-            });
-        
-        this.router.post('/', jsonParser, (req, res) => {
-            const content = req.body.file;
-            const contentType = req.body.contentType;
-            const fileType = req.body.fileType;
-            
-            if(!content){
-                res.status(400).send('No file presented in request.');
-            } else {
-                const file: IFile = {
-                    _id: null,
-                    type: fileType,
-                    file: content,
-                    contentType: contentType
-                }
-                
-                dao.createFile(file)
-                    .then(file => {
-                        res.status(201).json('File created.');
-                    })
-                    .catch(error => {
-                        res.status(500).json(error);
-                    });
-            }  
+                });
         });
-        
-        this.router.put('/', jsonParser, (req, res) => {
-            let file: IFile = req.body;
-            dao.updateFile(file)
+
+        this.router.get('/type/:typeId', jsonParser, (req, res) => {
+            dao.getFilesByType(req.params.typeId)
                 .then(file => {
-                    // res.status(204).end();
                     res.status(200).json(file);
                 })
                 .catch(error => {
                     res.status(500).json(error);
-                })
+                });
+        });
+
+        this.router.post('/', formParser.any(), (req, res) => {
+            if (!req.body) {
+                res.status(400).send('No file presented in request.');
+            } else {
+                const file: IFile = {
+                    _id: null,
+                    id: uuidV4(),
+                    type: req.body.fileType,
+                    file: req.body.file,
+                    contentType: req.body.contentType
+                };
+
+                dao.createFile(file)
+                    .then(f => {
+                        res.status(201).json(f);
+                    })
+                    .catch(error => {
+                        res.status(500).json(error);
+                    });
+            }
+        });
+
+        this.router.put('/', formParser.any(), (req, res) => {
+            if (!req.body) {
+                res.status(400).send('No file presented in request.');
+            } else {
+                const file: IFile = {
+                    _id: null,
+                    id: req.body.id,
+                    type: req.body.fileType,
+                    file: req.body.file,
+                    contentType: req.body.contentType
+                };
+                dao.updateFile(file)
+                    .then(f => {
+                        res.status(204).end();
+                        res.status(200).json(f);
+                    })
+                    .catch(error => {
+                        res.status(500).json(error);
+                    });
+            }
         });
 
         this.router.delete('/', (req, res) => {
@@ -74,14 +96,13 @@ export class FilesRoute {
         });
 
         this.router.delete('/:fileId', (req, res) => {
-            dao.remove(req.params.fileId)
+            dao.deleteFile(req.params.fileId)
                 .then(file => {
-                    // res.status(204).end();
-                    res.status(200).json('File deleted');
+                    res.status(204).end();
                 })
                 .catch(error => {
                     res.status(500).json(error);
-                })
+                });
         });
     }
 }
