@@ -24,7 +24,7 @@ export class FileDao extends GenericDao {
 
     public getFile(fileId: string | number | MongoClient.Types.ObjectId): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this.querySingle({ _id: new MongoClient.Types.ObjectId(fileId) })
+            this.querySingle({ id: fileId })
                 .then((file) => {
                     if (!file) {
                         reject('File not found');

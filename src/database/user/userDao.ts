@@ -1,43 +1,49 @@
 import { UserModel, IUser } from './userModel';
-import { GenericDao } from '../genericDao'
+import { GenericDao } from '../genericDao';
 import * as MongoClient from 'mongoose';
 import { FileDao } from '../files/filesDao';
 
 export class UserDao extends GenericDao {
 
-    constructor () {
-        let user = new UserModel(false);
-        super (user.getSchema(), 'users');
-    } 
+    constructor() {
+        const user = new UserModel(false);
+        super(user.getSchema(), 'users');
+    }
 
-    public login (eMail, password) {
-        var self= this;
-        return new Promise ((resolve, reject) => {
-            self.querySingle({'eMail': eMail})
+    public login(eMail, password) {
+        return new Promise((resolve, reject) => {
+            this.querySingle({ eMail: eMail })
                 .then((user) => {
                     if (!user) {
-                        reject ('Wrong credentials.');
+                        reject('Wrong credentials.');
                     }
                     user.comparePassword(password)
                         .then((match) => {
                             if (match) {
+                                user.password = '';
+                                delete user.password;
                                 const files = new FileDao();
-                                files.getFile('5a040b0b3e9823246894c919')
-                                     .then(file => {
-                                         user.password = file.file;
-                                         resolve(user);
-                                     })
-                                     .catch(error => {
-                                        reject(error);
-                                     })
+                                if (user.avatarId) {
+                                    files.getFile(user.avatarId)
+                                        .then(file => {
+                                            user.avatarId = file.file;
+                                            console.log(user);
+                                            resolve(user);
+                                        })
+                                        .catch(error => {
+                                            console.log(error);
+                                            reject(error);
+                                        });
+                                } else {
+                                    resolve(user);
+                                }
                             } else {
                                 reject('Wrong credentials.');
                             }
                         })
-                        .catch(reject)
+                        .catch(reject);
                 })
                 .catch(reject);
         });
-
     }
 }

@@ -6,11 +6,11 @@ export class BaseModel {
      */
     private schema: MongoClient.Schema;
 
-    constructor (schemaObj) {
+    constructor(schemaObj) {
         this.schema = new MongoClient.Schema(schemaObj);
     }
 
-    public getSchema () {
+    public getSchema() {
         return this.schema;
     }
 }
