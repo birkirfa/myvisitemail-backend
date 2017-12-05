@@ -21,17 +21,14 @@ export class UserDao extends GenericDao {
                         .then((match) => {
                             if (match) {
                                 user.password = '';
-                                delete user.password;
                                 const files = new FileDao();
                                 if (user.avatarId) {
                                     files.getFile(user.avatarId)
                                         .then(file => {
                                             user.avatarId = file.file;
-                                            console.log(user);
                                             resolve(user);
                                         })
                                         .catch(error => {
-                                            console.log(error);
                                             reject(error);
                                         });
                                 } else {

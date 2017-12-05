@@ -1,4 +1,4 @@
-import * as MongoClient from 'mongoose'
+import * as MongoClient from 'mongoose';
 
 export class BaseModel {
     /*
