@@ -1,37 +1,37 @@
 import * as Express from 'express';
-import { UserDao } from '../database/user/userDao';
-import * as bodyParser from'body-parser';
-import * as cors from "cors";
-const jsonParser = bodyParser.json();
-const dao = new UserDao();
+import { UserDao } from '../database/user/user.dao';
+import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
 
 export class UserRoute {
     router: Express.Router;
 
-    constructor () {
+    jsonParser = bodyParser.json();
+    dao = new UserDao();
 
+    constructor() {
         this.router = Express.Router();
 
         this.router.get('/', (req, res) => {
-            dao.getAll()
+            this.dao.getAll()
                 .then((users) => {
                     res.status(200).json(users);
                 })
                 .catch((error) => {
                     res.status(500).send('Database error.');
-                })
+                });
         });
 
-        this.router.post('/', jsonParser, (req, res) => {
-            let createData = req.body;
+        this.router.post('/', this.jsonParser, (req, res) => {
+            const createData = req.body;
             if (Object.keys(createData).length && createData.eMail) {
-                dao.createWithUniqueCheck(createData, {'eMail': createData.eMail})
-                    .then(function (response) {
+                this.dao.createWithUniqueCheck(createData, { eMail: createData.eMail })
+                    .then(response => {
                         res.status(200).json(response);
                     })
-                    .catch(function (error) {
+                    .catch(error => {
                         res.status(500).json(error);
-                    })
+                    });
             } else {
                 res.status(400).send('Insufficient data.');
             }
@@ -41,28 +41,28 @@ export class UserRoute {
             res.status(400).send('Missing userId parameter.');
         });
 
-        this.router.put('/:userId', jsonParser, (req, res) => {
-            let id = req.params.userId;
-            let updateData = req.body;
+        this.router.put('/:userId', this.jsonParser, (req, res) => {
+            const id = req.params.userId;
+            const updateData = req.body;
             if (Object.keys(updateData).length) {
-                dao.update(id, updateData)
-                    .then(function (response) {
+                this.dao.update(id, updateData)
+                    .then(response => {
                         res.status(200).json(response);
                     })
-                    .catch(function (error) {
+                    .catch(error => {
                         res.status(500).json(error);
-                    })
+                    });
             } else {
                 res.status(400).send('Insufficient data.');
             }
         });
 
-        this.router.post('/login', jsonParser, (req, res) => {
-            var userCandidate = req.body;
+        this.router.post('/login', this.jsonParser, (req, res) => {
+            const userCandidate = req.body;
             if (Object.keys(userCandidate).length) {
                 if (userCandidate.eMail) {
                     if (userCandidate.password) {
-                        dao.login(userCandidate.eMail, userCandidate.password)
+                        this.dao.login(userCandidate.eMail, userCandidate.password)
                             .then((logged) => {
                                 res.status(200).json(logged);
                             })
@@ -83,13 +83,13 @@ export class UserRoute {
         });
 
         this.router.delete('/:userId', (req, res) => {
-            dao.remove(req.params.userId)
-                .then(function (response) {
+            this.dao.remove(req.params.userId)
+                .then(response => {
                     res.status(200).json('User ' + response.firstName + ' deleted');
                 })
-                .catch(function (error) {
+                .catch(error => {
                     res.status(500).json(error);
-                })
+                });
         });
     }
 }

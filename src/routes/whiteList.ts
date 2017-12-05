@@ -3,8 +3,8 @@ export class WhiteList {
         'http://localhost:4200'
     ];
 
-    public isAllowed (origin) {
-        for (var key in this.originList) {
+    public isAllowed(origin) {
+        for (const key in this.originList) {
             if (origin === this.originList[key]) {
                 return true;
             }

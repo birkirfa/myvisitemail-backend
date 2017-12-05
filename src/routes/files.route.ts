@@ -4,21 +4,21 @@ import * as multer from 'multer';
 import * as cors from 'cors';
 import { v4 as uuidV4 } from 'uuid';
 
-import { FileDao } from '../database/files/filesDao';
-import { IFile, FileType } from '../database/files/filesModel';
-
-const jsonParser = bodyParser.json();
-const formParser = multer();
-const dao = new FileDao();
+import { FileDao } from '../database/files/files.dao';
+import { IFile, FileType } from '../database/files/files.model';
 
 export class FilesRoute {
     router: Express.Router;
+    jsonParser = bodyParser.json();
+    formParser = multer();
+
+    private dao = new FileDao();
 
     constructor() {
         this.router = Express.Router();
 
-        this.router.get('/', jsonParser, (req, res) => {
-            dao.getAllFiles()
+        this.router.get('/', this.jsonParser, (req, res) => {
+            this.dao.getAllFiles()
                 .then(files => {
                     res.status(200).json(files);
                 })
@@ -27,8 +27,8 @@ export class FilesRoute {
                 });
         });
 
-        this.router.get('/:fileId', jsonParser, (req, res) => {
-            dao.getFile(req.params.fileId)
+        this.router.get('/:fileId', this.jsonParser, (req, res) => {
+            this.dao.getFile(req.params.fileId)
                 .then(file => {
                     res.status(200).json(file);
                 })
@@ -37,8 +37,8 @@ export class FilesRoute {
                 });
         });
 
-        this.router.get('/type/:typeId', jsonParser, (req, res) => {
-            dao.getFilesByType(req.params.typeId)
+        this.router.get('/type/:typeId', this.jsonParser, (req, res) => {
+            this.dao.getFilesByType(req.params.typeId)
                 .then(file => {
                     res.status(200).json(file);
                 })
@@ -47,7 +47,7 @@ export class FilesRoute {
                 });
         });
 
-        this.router.post('/', formParser.any(), (req, res) => {
+        this.router.post('/', this.formParser.any(), (req, res) => {
             if (!req.body) {
                 res.status(400).send('No file presented in request.');
             } else {
@@ -59,7 +59,7 @@ export class FilesRoute {
                     contentType: req.body.contentType
                 };
 
-                dao.createFile(file)
+                this.dao.createFile(file)
                     .then(f => {
                         res.status(201).json(f);
                     })
@@ -69,7 +69,7 @@ export class FilesRoute {
             }
         });
 
-        this.router.put('/', formParser.any(), (req, res) => {
+        this.router.put('/', this.formParser.any(), (req, res) => {
             if (!req.body) {
                 res.status(400).send('No file presented in request.');
             } else {
@@ -80,7 +80,7 @@ export class FilesRoute {
                     file: req.body.file,
                     contentType: req.body.contentType
                 };
-                dao.updateFile(file)
+                this.dao.updateFile(file)
                     .then(f => {
                         res.status(204).end();
                         res.status(200).json(f);
@@ -96,7 +96,7 @@ export class FilesRoute {
         });
 
         this.router.delete('/:fileId', (req, res) => {
-            dao.deleteFile(req.params.fileId)
+            this.dao.deleteFile(req.params.fileId)
                 .then(file => {
                     res.status(204).end();
                 })

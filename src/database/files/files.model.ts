@@ -1,4 +1,4 @@
-import { BaseModel } from '../baseModel';
+import { BaseModel } from '../base.model';
 import * as MongoClient from 'mongoose';
 
 export class FileModel extends BaseModel {

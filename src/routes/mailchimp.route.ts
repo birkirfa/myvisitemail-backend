@@ -1,19 +1,20 @@
 import * as Express from 'express';
-import * as bodyParser from'body-parser';
-import { MailchimpDao } from '../database/mailchimp/mailchimpDao';
-const jsonParser = bodyParser.json();
+import * as bodyParser from 'body-parser';
+import { MailchimpDao } from '../database/mailchimp/mailchimp.dao';
 
 export class MailchimpRoute {
     router: Express.Router;
+    jsonParser = bodyParser.json();
+
     private dao: MailchimpDao = new MailchimpDao('');
-    constructor () {
+    constructor() {
 
         this.router = Express.Router();
 
         this.router.get('/list', (req, res) => {
             this.dao.getLists()
                 .then((result) => {
-                    res.status(200).json(result.lists)
+                    res.status(200).json(result.lists);
                 })
                 .catch((error) => {
                     res.status(500).send(error);
@@ -23,7 +24,7 @@ export class MailchimpRoute {
         this.router.get('/list/:id', (req, res) => {
             this.dao.getListById(req.params.id)
                 .then((list) => {
-                    res.status(200).json(list)
+                    res.status(200).json(list);
                 })
                 .catch((error) => {
                     res.status(500).send(error);
@@ -33,7 +34,7 @@ export class MailchimpRoute {
         this.router.get('/report', (req, res) => {
             this.dao.getReports()
                 .then((result) => {
-                    res.status(200).json(result.reports)
+                    res.status(200).json(result.reports);
                 })
                 .catch((error) => {
                     res.status(500).send(error);
@@ -43,7 +44,7 @@ export class MailchimpRoute {
         this.router.get('/campaign', (req, res) => {
             this.dao.getCampaigns()
                 .then((result) => {
-                    res.status(200).json(result.campaigns)
+                    res.status(200).json(result.campaigns);
                 })
                 .catch((error) => {
                     res.status(500).send(error);
@@ -53,14 +54,14 @@ export class MailchimpRoute {
         this.router.get('/automations', (req, res) => {
             this.dao.getAutomations()
                 .then((list) => {
-                    res.status(200).json(list)
+                    res.status(200).json(list);
                 })
                 .catch((error) => {
                     res.status(500).send(error);
                 });
         });
 
-        this.router.post('/list', jsonParser, (req, res) => {
+        this.router.post('/list', this.jsonParser, (req, res) => {
             this.dao.createList(req.body)
                 .then((result) => {
                     res.status(200).json(result);
@@ -70,7 +71,7 @@ export class MailchimpRoute {
                 });
         });
 
-        this.router.put('/list/:listId', jsonParser, (req, res) => {
+        this.router.put('/list/:listId', this.jsonParser, (req, res) => {
             this.dao.updateList(req.params.listId, req.body)
                 .then((result) => {
                     res.status(200).json(result);
@@ -80,8 +81,8 @@ export class MailchimpRoute {
                 });
         });
 
-        this.router.post('/campaign', jsonParser, (req, res) => {//'Insufficient data.'
-            let createData = req.body;
+        this.router.post('/campaign', this.jsonParser, (req, res) => { // 'Insufficient data.'
+            const createData = req.body;
 
             if (Object.keys(createData).length && createData.recipients) {
                 console.log('Creating campaign', createData);
@@ -105,8 +106,8 @@ export class MailchimpRoute {
             res.status(400).send('Missing campaignId parameter.');
         });
 
-        this.router.patch('/campaign/:campaignId', jsonParser, (req, res) => {
-            let createData = req.body;
+        this.router.patch('/campaign/:campaignId', this.jsonParser, (req, res) => {
+            const createData = req.body;
 
             if (Object.keys(createData).length) {
                 this.dao.updateCampaign(req.body, req.params.campaignId)
@@ -132,9 +133,9 @@ export class MailchimpRoute {
         });
 
         this.router.post('/campaign/:campaignId/:action', (req, res) => {
-            let action = req.params.action;
-            let campaignId = req.params.campaignId;
-            let options = req.body || {};
+            const action = req.params.action;
+            const campaignId = req.params.campaignId;
+            const options = req.body || {};
             try {
                 this.dao.performCampaignAction(campaignId, action, options)
                     .then((result) => {
@@ -147,6 +148,6 @@ export class MailchimpRoute {
             } catch (error) {
                 res.status(500).send('Attempted to schedule a campaign with no schedule time!');
             }
-        })
+        });
     }
 }
