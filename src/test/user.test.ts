@@ -1,7 +1,7 @@
 import * as expect from 'expect.js';
 import * as superAgent from 'superagent';
-import 'mocha'
-import { UserDao } from "../database/user/userDao";
+import 'mocha';
+import { UserDao } from "../database/user/user.dao";
 const dao = new UserDao();
 // import {describe, it, timeout} from "mocha-typescript";
 

@@ -1,7 +1,7 @@
-import { UserModel, IUser } from './userModel';
-import { GenericDao } from '../genericDao';
+import { UserModel, IUser } from './user.model';
+import { GenericDao } from '../generic.dao';
 import * as MongoClient from 'mongoose';
-import { FileDao } from '../files/filesDao';
+import { FileDao } from '../files/files.dao';
 
 export class UserDao extends GenericDao {
 

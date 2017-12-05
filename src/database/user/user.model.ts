@@ -1,4 +1,4 @@
-import { BaseModel } from '../baseModel';
+import { BaseModel } from '../base.model';
 import * as bcrypt from 'bcrypt';
 import * as MongoClient from 'mongoose';
 const SALT_WORK_FACTOR = 10;

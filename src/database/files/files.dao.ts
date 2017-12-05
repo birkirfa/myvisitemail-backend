@@ -1,5 +1,5 @@
-import { FileModel, IFile, FileType } from './filesModel';
-import { GenericDao } from '../genericDao';
+import { FileModel, IFile, FileType } from './files.model';
+import { GenericDao } from '../generic.dao';
 import * as MongoClient from 'mongoose';
 
 export class FileDao extends GenericDao {

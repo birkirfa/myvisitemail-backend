@@ -1,14 +1,14 @@
-import * as Mailchimp from 'mailchimp-api-v3'
+import * as Mailchimp from 'mailchimp-api-v3';
 
 export class MailchimpDao {
     private mailchimpApiKey: string = '579e812841299b40988a9bd905d2ac9f-us17';
     private mailchimp: Mailchimp;
 
-    constructor (apiKey:string) {
+    constructor(apiKey: string) {
         this.mailchimp = new Mailchimp(apiKey || this.mailchimpApiKey);
     }
 
-    public isComplete (campaign) {
+    public isComplete(campaign) {
         if (campaign.settings
             && campaign.settings.title
             && campaign.settings.template_id
@@ -20,27 +20,27 @@ export class MailchimpDao {
         return false;
     }
 
-    public getLists () {
+    public getLists() {
         return this.mailchimp.get('/lists')
     }
 
-    public getListById (listId:string) {
+    public getListById(listId: string) {
         return this.mailchimp.get('/lists/' + listId);
     }
 
-    public getCampaigns () {
+    public getCampaigns() {
         return this.mailchimp.get('/campaigns')
     }
 
-    public getAutomations () {
+    public getAutomations() {
         return this.mailchimp.get('/automations');
     }
 
-    public createList (listObject: Object) {
+    public createList(listObject: Object) {
         return this.mailchimp.post('/lists', listObject)
     }
 
-    public updateList (listId: string, listObject: Object) {
+    public updateList(listId: string, listObject: Object) {
         return this.mailchimp.patch('/lists/' + listId, listObject);
     }
 
@@ -65,7 +65,7 @@ export class MailchimpDao {
         return this.mailchimp.post('/campaigns', campaign);
     }
 
-    public updateCampaign (campaignUpdate: Object, campaignId: string) {
+    public updateCampaign(campaignUpdate: Object, campaignId: string) {
         return this.mailchimp.patch('/campaigns/' + campaignId, campaignUpdate);
     }
 
@@ -81,7 +81,7 @@ export class MailchimpDao {
      *                      + test
      *                      + unschedule
      */
-    public performCampaignAction (campaignId: string, action:string, options: object) {
+    public performCampaignAction(campaignId: string, action: string, options: object) {
         let scheduleDate;
         if (action === 'schedule') {
             try {
@@ -89,14 +89,14 @@ export class MailchimpDao {
                 this.setScheduleMinutes(scheduleDate);
                 options['schedule_time'] = scheduleDate;
             } catch (error) {
-                    console.error(error);
+                console.error(error);
                 throw (error);
             }
         }
         return this.mailchimp.post('/campaigns/' + campaignId + '/actions/' + action, options)
     }
 
-    private setScheduleMinutes (date: Date) {
+    private setScheduleMinutes(date: Date) {
         let minutes = date.getMinutes();
         let hours = date.getHours();
         let toCheck = minutes % 15;
@@ -116,7 +116,7 @@ export class MailchimpDao {
      * @param {Object} campaignObject
      * @param {Date} date
      */
-    public createAndScheduleCampaign (campaignObject: Object, date: Date) {
+    public createAndScheduleCampaign(campaignObject: Object, date: Date) {
         this.setScheduleMinutes(date);
 
         this.createCampaign(campaignObject)
@@ -124,24 +124,24 @@ export class MailchimpDao {
                 this.performCampaignAction(createdCampaign.id, 'schedule', {
                     schedule_time: date
                 })
-                .then(res => {
-                    console.log(res);
-                })
-                .error(err => {
-                    console.error(err);
-                })
+                    .then(res => {
+                        console.log(res);
+                    })
+                    .error(err => {
+                        console.error(err);
+                    })
             })
     }
 
-    public deleteCampaign (campaignId: string) {
+    public deleteCampaign(campaignId: string) {
         return this.mailchimp.delete('/campaigns/' + campaignId);
     }
 
-    public getReports () {
+    public getReports() {
         return this.mailchimp.get('/reports');
     }
 
-    public getReportsByCampaignId (campaignId: string) {
+    public getReportsByCampaignId(campaignId: string) {
         return this.mailchimp.get('/reports/' + campaignId);
     }
 }

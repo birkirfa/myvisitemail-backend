@@ -2,8 +2,8 @@ import * as expect from 'expect.js';
 import * as superAgent from 'superagent';
 import 'mocha';
 import * as FormData from 'form-data';
-import { FileDao } from '../database/files/filesDao';
-import { FileType, IFile } from '../database/files/filesModel';
+import { FileDao } from '../database/files/files.dao';
+import { FileType, IFile } from '../database/files/files.model';
 const dao = new FileDao();
 
 describe('/file API endpoint', () => {
