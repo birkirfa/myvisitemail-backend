@@ -1,7 +1,7 @@
 import * as Mailchimp from 'mailchimp-api-v3';
 
 export class MailchimpDao {
-    private mailchimpApiKey: string = '579e812841299b40988a9bd905d2ac9f-us17';
+    private mailchimpApiKey = '579e812841299b40988a9bd905d2ac9f-us17';
     private mailchimp: Mailchimp;
 
     constructor(apiKey: string) {
@@ -21,7 +21,7 @@ export class MailchimpDao {
     }
 
     public getLists() {
-        return this.mailchimp.get('/lists')
+        return this.mailchimp.get('/lists');
     }
 
     public getListById(listId: string) {
@@ -29,18 +29,18 @@ export class MailchimpDao {
     }
 
     public getCampaigns() {
-        return this.mailchimp.get('/campaigns')
+        return this.mailchimp.get('/campaigns');
     }
 
     public getAutomations() {
         return this.mailchimp.get('/automations');
     }
 
-    public createList(listObject: Object) {
-        return this.mailchimp.post('/lists', listObject)
+    public createList(listObject: any) {
+        return this.mailchimp.post('/lists', listObject);
     }
 
-    public updateList(listId: string, listObject: Object) {
+    public updateList(listId: string, listObject: any) {
         return this.mailchimp.patch('/lists/' + listId, listObject);
     }
 
@@ -61,11 +61,11 @@ export class MailchimpDao {
         }
     }
      */
-    public createCampaign(campaign: Object) {
+    public createCampaign(campaign: any) {
         return this.mailchimp.post('/campaigns', campaign);
     }
 
-    public updateCampaign(campaignUpdate: Object, campaignId: string) {
+    public updateCampaign(campaignUpdate: any, campaignId: string) {
         return this.mailchimp.patch('/campaigns/' + campaignId, campaignUpdate);
     }
 
@@ -93,15 +93,15 @@ export class MailchimpDao {
                 throw (error);
             }
         }
-        return this.mailchimp.post('/campaigns/' + campaignId + '/actions/' + action, options)
+        return this.mailchimp.post(`/campaigns/${campaignId}/actions/${action}`, options);
     }
 
     private setScheduleMinutes(date: Date) {
         let minutes = date.getMinutes();
         let hours = date.getHours();
-        let toCheck = minutes % 15;
+        const toCheck = minutes % 15;
         if (toCheck % 15 !== 0) {
-            let setMinutes = minutes + 15 - toCheck
+            const setMinutes = minutes + 15 - toCheck;
             if (minutes === 60) {
                 minutes = 0;
                 hours++;
@@ -116,7 +116,7 @@ export class MailchimpDao {
      * @param {Object} campaignObject
      * @param {Date} date
      */
-    public createAndScheduleCampaign(campaignObject: Object, date: Date) {
+    public createAndScheduleCampaign(campaignObject: any, date: Date) {
         this.setScheduleMinutes(date);
 
         this.createCampaign(campaignObject)
@@ -129,8 +129,8 @@ export class MailchimpDao {
                     })
                     .error(err => {
                         console.error(err);
-                    })
-            })
+                    });
+            });
     }
 
     public deleteCampaign(campaignId: string) {
@@ -139,6 +139,10 @@ export class MailchimpDao {
 
     public getReports() {
         return this.mailchimp.get('/reports');
+    }
+
+    public getReportsFor(campaignId: string) {
+        return this.mailchimp.get(`/reports/${campaignId}`);
     }
 
     public getReportsByCampaignId(campaignId: string) {

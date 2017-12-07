@@ -41,6 +41,21 @@ export class MailchimpRoute {
                 });
         });
 
+        this.router.get('/report/:campaignId', (req, res) => {
+            const campaignId = req.params.campaignId;
+            this.dao.getReportsFor(campaignId)
+                .then((result) => {
+                    res.status(200).json(result);
+                })
+                .catch((error) => {
+                    if (error.status) {
+                        return res.status(error.status).send(error);
+                    } else {
+                        res.status(500).send(error);
+                    }
+                });
+        });
+
         this.router.get('/campaign', (req, res) => {
             this.dao.getCampaigns()
                 .then((result) => {
