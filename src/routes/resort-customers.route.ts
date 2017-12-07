@@ -1,17 +1,26 @@
 import * as Express from 'express';
 import * as bodyParser from 'body-parser';
 import { IResortCustomer, IResortCustomerDetails } from '../database/resort-customers/resort-customers.model';
+import { CustomerDao } from '../database/resort-customers/resort-customer.dao';
 
 export class ResortCustomersRoute {
     router: Express.Router;
     jsonParser = bodyParser.json();
+    dao: CustomerDao;
 
     constructor() {
+        this.dao = new CustomerDao();
         this.router = Express.Router();
 
-        this.router.get('/all', (req, res) => {
-            const result = this.mockResortCustomersList();
-
+        this.router.get('/all', async (req, res) => {
+            let result;
+            try {
+                result = await this.dao.getCustomerList();
+                // mockResortCustomersList();
+            } catch (err) {
+                res.status(500).send('Something went wrong');
+                return;
+            }
             res.status(200).json(result);
         });
         this.router.get('/detail', (req, res) => {

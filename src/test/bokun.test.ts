@@ -1,9 +1,6 @@
 import * as expect from 'expect.js';
 import * as superAgent from 'superagent';
 import 'mocha'
-import { UserDao } from "../database/user/userDao";
-const dao = new UserDao();
-// import {describe, it, timeout} from "mocha-typescript";
 
 describe ('/Bokun API endpoint', () => {
 

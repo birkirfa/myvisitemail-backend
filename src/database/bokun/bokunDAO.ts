@@ -12,9 +12,6 @@ export class BokunDAO {
         this.accessKey = 'a2d9749ac9cd4cb38a79760add3431d0';
         this.secretKey = 'c1938ca317c54de09b0aafb9223c4a0c';
         this.hostname = 'api.bokun.io';
-        this.getProductsFromListBySlug('test')
-            .then(res => console.log(res))
-            .catch(err => console.error(err));
     }
 
     private encodeSignature (date, method, path) {
