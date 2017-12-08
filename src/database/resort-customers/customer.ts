@@ -12,7 +12,9 @@ export class Customer {
         this.position = position;
         this.email = email;
         this.rooms = rooms;
-        this.lastSent = new Date(mailingReports[0].send_time);
+        if (mailingReports.length) {
+            this.lastSent = new Date(mailingReports[0].send_time);
+        }
         this.invoice = invoice;
         this.mailingReports = mailingReports;
     }

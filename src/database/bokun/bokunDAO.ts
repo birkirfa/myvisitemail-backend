@@ -1,17 +1,23 @@
 import * as https from 'https';
 import * as crypto from 'crypto';
 import * as dateFormat from 'dateformat';
+import * as request from 'request';
+import * as axios  from 'axios';
 
 export class BokunDAO {
     private accessKey: string;
     private secretKey: string;
     private hostname: string;
     private vendorList: Array<Object>;
+    private axios;
+
     constructor () {
         this.vendorList = [];
         this.accessKey = 'a2d9749ac9cd4cb38a79760add3431d0';
         this.secretKey = 'c1938ca317c54de09b0aafb9223c4a0c';
         this.hostname = 'api.bokun.io';
+        this.axios = axios;
+        this.axios.defaults.baseURL = 'https://api.bokun.io';
     }
 
     private encodeSignature (date, method, path) {
@@ -23,16 +29,9 @@ export class BokunDAO {
 
     private prepareHttpOptions (method, path) {
         let date = dateFormat(new Date(), 'yyyy-mm-dd HH:mm:ss');
-        let options;
-        return {
-            hostname: this.hostname,
-            path: path,
-            headers: {
-                'X-Bokun-Date': date,
-                'X-Bokun-AccessKey': this.accessKey,
-                'X-Bokun-Signature': this.encodeSignature(date, method, path)
-            }
-        };
+        this.axios.defaults.headers.common['X-Bokun-Date'] = date;
+        this.axios.defaults.headers.common['X-Bokun-AccessKey'] = this.accessKey;
+        this.axios.defaults.headers.common['X-Bokun-Signature'] = this.encodeSignature(date, method, path);
     }
 
     private ProcessItemsResponse (response, data, extrapolateItems) {
@@ -86,53 +85,34 @@ export class BokunDAO {
      */
     getProductList () {
         return new Promise((resolve, reject) => {
-            let options = this.prepareHttpOptions (
+            this.prepareHttpOptions (
                 'GET', '/product-list.json/list'
             );
-            const req = https.get(options, (res) => {
-                res.on('data', async (data) => {
-                    resolve (await this.ProcessItemsResponse (
-                        res, data, false
-                    ));
-                });
-            });
+            this.axios.get('/product-list.json/list')
+                .then(res => resolve(res.data))
+                .catch(err => reject (err));
         });
     }
 
     getProductsFromListBySlug (listSlug:string) {
         return new Promise((resolve, reject) => {
-            let options = this.prepareHttpOptions (
+            this.prepareHttpOptions (
                 'GET', '/product-list.json/slug/' + listSlug
             );
-            const req = https.get(options, (res) => {
-                res.on('data', async (data) => {
-                    let result;
-                    try {
-                        result = this.ProcessItemsResponse (
-                            res, data, true);
-                    } catch (error) {
-                        reject (error);
-                        return;
-                    }
-                    this.extractAllVendorsFromProducts(result);
-                    resolve(this.vendorList);
-                });
-            });
+            this.axios.get('/product-list.json/slug/' + listSlug)
+                .then(res => resolve(res.data))
+                .catch(err => reject (err));
         });
     }
 
     getProductsFromListById (listId:number) {
         return new Promise((resolve, reject) => {
-            let options = this.prepareHttpOptions (
+            this.prepareHttpOptions (
                 'GET', '/product-list.json/' + listId
             );
-            const req = https.get(options, (res) => {
-                res.on('data', async (data) => {
-                    resolve (await this.ProcessItemsResponse (
-                        res, data, true
-                    ));
-                });
-            });
+            this.axios.get('/product-list.json/' + listId)
+                .then(res => resolve(res.data))
+                .catch(err => reject (err));
         });
     }
 
@@ -141,16 +121,41 @@ export class BokunDAO {
             let options = this.prepareHttpOptions (
                 'GET', '/accommodation.json/' + accommodationId + '?lang=EN'
             );
-            const req = https.get(options, (res) => {
-                res.on('data', (d) => {
-                    let result = JSON.parse(d.toString());
-                    if (res.statusCode === 200) {
-                        resolve(result);
-                    } else {
-                        reject (result);
-                    }
-                });
-            });
+            this.axios.get('/accommodation.json/' + accommodationId + '?lang=EN')
+                .then(res => resolve(JSON.parse(res)))
+                .catch(err => reject (err));
         });
+    }
+
+    getBookingsByProductId (accommodationId: number) {
+        return new Promise((resolve, reject) => {
+            this.prepareHttpOptions (
+                'POST', '/booking.json/product-booking-search'
+            );
+            this.axios.post('/booking.json/product-booking-search',
+                { "productIds": [accommodationId]})
+                .then(res => resolve(res.data))
+                .catch(err => reject(err.response.data));
+        });
+    }
+
+    async getProductsWithBookings () {
+        let productList = await this.getProductList();
+        let bookings = [];
+        for (const key in productList) {
+            let product = productList[key];
+            let products = await this.getProductsFromListById(product.id);
+            products = products['items'];
+            for (const index in products) {
+                let product = products[index]
+                let item = product[product['productCategory'].toLowerCase()]
+                let booking = await this.getBookingsByProductId(item.id);
+                bookings.push({
+                    'bookings': booking['results'],
+                    'location': item['location']
+                });
+            }
+        }
+        return bookings;
     }
 }

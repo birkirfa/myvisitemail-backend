@@ -18,6 +18,7 @@ export class ResortCustomersRoute {
                 result = await this.dao.getCustomerList();
                 // mockResortCustomersList();
             } catch (err) {
+                console.error(err);
                 res.status(500).send('Something went wrong');
                 return;
             }

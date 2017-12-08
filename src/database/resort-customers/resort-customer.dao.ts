@@ -47,6 +47,7 @@ export class CustomerDao {
                     }
                 }
                 let products = await this.bokun.getProductsFromListById(value['id']);
+                products = products['items'];
                 if (mailList) {
                     let listReports = this.getLatestReportByListId (mailList.id, mailReports);
                     return new Customer(
