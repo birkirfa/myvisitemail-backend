@@ -42,6 +42,7 @@ app.get('/', (req, res) => {
 });
 
 app.all('/*', cors(options), (req, res, next) => {
+    // next ();
     if (req.headers['origin'] && whiteList.isAllowed(req.headers['origin'])) {
         next ();
     } else {

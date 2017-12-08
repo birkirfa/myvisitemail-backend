@@ -31,14 +31,13 @@ export class CustomerDao {
         return listReports;
     }
 
-    public async getCustomerList () {
+    async getCustomerList () {
         const productLists = await this.bokun.getProductList();
         let mailingLists = await this.mailchimp.getLists();
         let mailReports = await this.mailchimp.getReports();
         mailReports = mailReports.reports;
         mailingLists = mailingLists.lists;
-        return await Promise.all(
-            productLists['map'](async value => {
+        return await Promise.all(productLists['map'](async value => {
                 let mailList;
                 for (let key in mailingLists) {
                     if (mailingLists[key]['name'] === value['title']) {
@@ -67,7 +66,6 @@ export class CustomerDao {
                         [],
                         '');
                 }
-            })
-        );
+        }));
     }
 }
