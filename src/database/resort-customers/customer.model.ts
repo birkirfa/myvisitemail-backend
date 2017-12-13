@@ -1,10 +1,10 @@
-import {BaseModel} from "../base.model";
+import {BaseModel} from '../base.model';
 import * as extend from 'extend';
 
 export class CustomerModel extends BaseModel {
 
     constructor(schemaObj) {
-        let baseCustomer = {
+        const baseCustomer = {
             name: {
                 type: String,
                 required: true,
@@ -19,7 +19,7 @@ export class CustomerModel extends BaseModel {
             }
         };
         if (!schemaObj) {
-            let fullModel = {
+            const fullModel = {
                 company: {
                     address: {
                         type: String,

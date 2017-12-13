@@ -1,6 +1,5 @@
 import * as Mailchimp from 'mailchimp-api-v3';
-import { MailingList } from "./MailchimpList";
-import { MailLists} from "./MailLists";
+import { IMailLists, IMailingList } from './mailchimp.model';
 
 export class MailchimpDao {
     private mailchimpApiKey = '579e812841299b40988a9bd905d2ac9f-us17';
@@ -22,11 +21,11 @@ export class MailchimpDao {
         return false;
     }
 
-    public getLists() : Promise<MailLists> {
+    public getLists(): Promise<IMailLists> {
         return this.mailchimp.get('/lists');
     }
 
-    public getListById(listId: string) : Promise<MailingList> {
+    public getListById(listId: string): Promise<IMailingList> {
         return this.mailchimp.get('/lists/' + listId);
     }
 
@@ -149,5 +148,35 @@ export class MailchimpDao {
 
     public getReportsByCampaignId(campaignId: string) {
         return this.mailchimp.get('/reports/' + campaignId);
+    }
+
+    public getTemplate(templateId: string) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public createTemplate(templateId: string) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public updateTemplate(templateId: string) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 }

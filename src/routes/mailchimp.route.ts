@@ -164,5 +164,39 @@ export class MailchimpRoute {
                 res.status(500).send('Attempted to schedule a campaign with no schedule time!');
             }
         });
+        
+        this.router.get('/email-template', (req, res) => {
+            res.status(400).send('Insufficient data.');
+        });
+
+        this.router.get('/email-template/:templateId', (req, res) => {
+            const templateId = req.params.templateId;
+            this.dao.getTemplate(templateId)
+                .then(result => {
+                    res.status(200).send(result);
+                })
+                .catch(error => {
+                    res.status(500).send(error);
+                });
+        });
+        
+        this.router.put('/email-template', (req, res) => {
+            res.status(400).send('Insufficient data.');
+        });
+
+        this.router.put('/email-template/:templateId', this.jsonParser, (req, res) => {
+            const templateId = req.params.templateId;
+            this.dao.updateTemplate(templateId)
+                .then(result => {
+                    res.status(200).send(result);
+                })
+                .catch(error => {
+                    res.status(500).send(error);
+                });
+        });
+
+        this.router.post('/email-template', this.jsonParser, (req, res) => {
+
+        });
     }
 }

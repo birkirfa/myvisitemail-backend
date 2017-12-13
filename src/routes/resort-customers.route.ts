@@ -1,7 +1,7 @@
 import * as Express from 'express';
 import * as bodyParser from 'body-parser';
 import { CustomerDao } from '../database/resort-customers/resort-customer.dao';
-import {RemovedCustomerDao} from "../database/resort-customers/removed-customer.dao";
+import { RemovedCustomerDao } from '../database/resort-customers/removed-customer.dao';
 
 export class ResortCustomersRoute {
     router: Express.Router;
@@ -13,10 +13,10 @@ export class ResortCustomersRoute {
         this.dao = new CustomerDao();
         this.router = Express.Router();
         this.removedDao = new RemovedCustomerDao();
-        this.router.get('/all', async (req, res) => {
+        this.router.get('/all', (req, res) => {
             let result;
             try {
-                result = await this.dao.getAll();
+                result = this.dao.getAll();
             } catch (err) {
                 console.error(err);
                 res.status(500).send('Something went wrong');
@@ -25,27 +25,27 @@ export class ResortCustomersRoute {
             res.status(200).json(result);
         });
 
-        this.router.get('/removed', async (req, res) => {
+        this.router.get('/removed', (req, res) => {
             let result;
             try {
-                result = await this.removedDao.filterList();
+                result = this.removedDao.filterList();
             } catch (err) {
                 console.error(err);
                 res.status(500).send('Something went wrong');
                 return;
             }
             res.status(200).json(result);
-        })
+        });
 
         this.router.get('/detail', (req, res) => {
             res.status(400).send('Resort id missing!');
         });
 
-        this.router.get('/detail/:resortId', async (req, res) => {
+        this.router.get('/detail/:resortId', (req, res) => {
             const resortId = req.params.resortId;
             let result;
             try {
-                result = await this.dao.getCustomerById(resortId);
+                result = this.dao.getCustomerById(resortId);
             } catch (error) {
                 console.error(error);
                 res.status(500).send(error);
@@ -54,11 +54,11 @@ export class ResortCustomersRoute {
             res.status(200).json(result);
         });
 
-        this.router.get('/reports/:email', async (req, res) => {
+        this.router.get('/reports/:email', (req, res) => {
             const email = req.params.email;
             let result;
             try {
-                result = await this.dao.getReportsByCustomerEmail(email);
+                result = this.dao.getReportsByCustomerEmail(email);
             } catch (error) {
                 console.error(error);
                 res.status(500).send(error);
@@ -117,24 +117,24 @@ export class ResortCustomersRoute {
             }
         });
 
-        this.router.delete('/:resortId', async (req, res) => {
+        this.router.delete('/:resortId', (req, res) => {
             const resortId = req.params.resortId;
             try {
-                await this.dao.remove(resortId);
+                this.dao.remove(resortId);
             } catch (error) {
                 console.error(error);
                 res.status(500).send('Error writing to DB');
                 return;
             }
             try {
-                await this.removedDao.filterList();
+                this.removedDao.filterList();
             } catch (error) {
                 console.error(error);
                 res.status(500).send('Error clearing removal list');
                 return;
             }
             try {
-                await this.removedDao.create({
+                this.removedDao.create({
                     removedDate: new Date().getTime()
                 });
             } catch (error) {
@@ -143,6 +143,6 @@ export class ResortCustomersRoute {
                 return;
             }
             res.status(200).send('OK!');
-        })
+        });
     }
- }
+}
