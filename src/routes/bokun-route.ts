@@ -52,7 +52,7 @@ export class BokunRoute {
         });
 
         this.router.get('/search/bookings/:productId', (req, res) => {
-            this.dao.getBookingsByProductId(req.params.productId)
+            this.dao.queryBookings(true, req.params.productId)
                 .then((result) => {
                     res.status(200).json(result)
                 })
@@ -62,7 +62,7 @@ export class BokunRoute {
         })
 
         this.router.get('/bookings', (req, res) => {
-            this.dao.getProductsWithBookings()
+            this.dao.queryBookings(false, 0)
                 .then((result) => {
                     res.status(200).json(result)
                 })

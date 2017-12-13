@@ -24,7 +24,9 @@ export class GenericDao {
     }
 
     public querySingle(queryObj) {
-        return this.Model.findOne(queryObj);
+        return new Promise <any> ((resolve, reject) => {
+            this.Model.findOne(queryObj).then(resolve).catch(reject);
+        });
     }
 
     public create(createData): Promise<any> {

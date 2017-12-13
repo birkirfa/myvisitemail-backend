@@ -1,4 +1,6 @@
 import * as Mailchimp from 'mailchimp-api-v3';
+import { MailingList } from "./MailchimpList";
+import { MailLists} from "./MailLists";
 
 export class MailchimpDao {
     private mailchimpApiKey = '579e812841299b40988a9bd905d2ac9f-us17';
@@ -20,11 +22,11 @@ export class MailchimpDao {
         return false;
     }
 
-    public getLists() {
+    public getLists() : Promise<MailLists> {
         return this.mailchimp.get('/lists');
     }
 
-    public getListById(listId: string) {
+    public getListById(listId: string) : Promise<MailingList> {
         return this.mailchimp.get('/lists/' + listId);
     }
 

@@ -1,7 +1,5 @@
-import * as https from 'https';
 import * as crypto from 'crypto';
 import * as dateFormat from 'dateformat';
-import * as request from 'request';
 import * as axios  from 'axios';
 
 export class BokunDAO {
@@ -127,13 +125,13 @@ export class BokunDAO {
         });
     }
 
-    getBookingsByProductId (accommodationId: number) {
+    queryBookings (buildQuery: boolean, accommodationId: number) {
         return new Promise((resolve, reject) => {
             this.prepareHttpOptions (
                 'POST', '/booking.json/product-booking-search'
             );
-            this.axios.post('/booking.json/product-booking-search',
-                { "productIds": [accommodationId]})
+            let queryObj = buildQuery ? { "productIds": [accommodationId]}: {};
+            this.axios.post('/booking.json/product-booking-search', queryObj)
                 .then(res => resolve(res.data))
                 .catch(err => reject(err.response.data));
         });
@@ -149,7 +147,7 @@ export class BokunDAO {
             for (const index in products) {
                 let product = products[index]
                 let item = product[product['productCategory'].toLowerCase()]
-                let booking = await this.getBookingsByProductId(item.id);
+                let booking = await this.queryBookings(true, item.id);
                 bookings.push({
                     'bookings': booking['results'],
                     'location': item['location']
