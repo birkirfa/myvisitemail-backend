@@ -1,131 +1,148 @@
 import * as Express from 'express';
 import * as bodyParser from 'body-parser';
-import { IResortCustomer, IResortCustomerDetails } from '../database/resort-customers/resort-customers.model';
 import { CustomerDao } from '../database/resort-customers/resort-customer.dao';
+import {RemovedCustomerDao} from "../database/resort-customers/removed-customer.dao";
 
 export class ResortCustomersRoute {
     router: Express.Router;
     jsonParser = bodyParser.json();
     dao: CustomerDao;
+    removedDao: RemovedCustomerDao;
 
     constructor() {
         this.dao = new CustomerDao();
         this.router = Express.Router();
-
+        this.removedDao = new RemovedCustomerDao();
         this.router.get('/all', async (req, res) => {
             let result;
             try {
-                result = await this.dao.getCustomerList();
-                // mockResortCustomersList();
+                result = await this.dao.getAll();
             } catch (err) {
+                console.error(err);
                 res.status(500).send('Something went wrong');
                 return;
             }
             res.status(200).json(result);
         });
+
+        this.router.get('/removed', async (req, res) => {
+            let result;
+            try {
+                result = await this.removedDao.filterList();
+            } catch (err) {
+                console.error(err);
+                res.status(500).send('Something went wrong');
+                return;
+            }
+            res.status(200).json(result);
+        })
+
         this.router.get('/detail', (req, res) => {
             res.status(400).send('Resort id missing!');
         });
-        this.router.get('/detail/:resortId', (req, res) => {
+
+        this.router.get('/detail/:resortId', async (req, res) => {
             const resortId = req.params.resortId;
-            const result = this.mockResortCustomerDetails(resortId);
-            if (result) {
-                res.status(200).json(result);
+            let result;
+            try {
+                result = await this.dao.getCustomerById(resortId);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send(error);
+                return;
+            }
+            res.status(200).json(result);
+        });
+
+        this.router.get('/reports/:email', async (req, res) => {
+            const email = req.params.email;
+            let result;
+            try {
+                result = await this.dao.getReportsByCustomerEmail(email);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send(error);
+                return;
+            }
+            res.status(200).json(result);
+        });
+
+        this.router.post('/', this.jsonParser, (req, res) => {
+            const createData = req.body;
+            if (Object.keys(createData).length &&
+                createData.company &&
+                createData.company.email) {
+                createData.metadata = {
+                    creationDate: new Date().getTime()
+                };
+                this.dao.createWithUniqueCheck(
+                    createData,
+                    {
+                        company: {
+                            email: createData.company.email
+                        }
+                    })
+                    .then(response => {
+                        res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        res.status(500).json(error);
+                    });
             } else {
-                res.status(500).json('Resort not found!');
+                res.status(400).send('Insufficient data.');
             }
         });
-    }
 
-    private mockResortCustomerDetails(id: string) {
-        const mock = this.mockResortCustomersList().find(r => r.id === id);
+        this.router.put('/', (req, res) => {
+            res.status(400).send('Missing userId parameter.');
+        });
 
-        if (mock) {
-            mock['phone'] = '+354 588 5522';
-            mock['emailsSent'] = 3814;
-            mock['emailsOpened'] = 2123;
-            mock['bounceRate'] = 0.12;
-            mock['cancellations'] = 12;
-            mock['lastWeek'] = 223;
-        }
-
-        return mock;
-    }
-
-    private mockResortCustomersList(): IResortCustomer[] {
-        return [
-            {
-                id: '1',
-                name: 'Gistihús Gumma',
-                position: 'Guesthouse',
-                email: 'gummi69@simnet.is',
-                rooms: 4,
-                lastSent: '2017/01/12',
-                invoice: '$860'
-            },
-            {
-                id: '2',
-                name: 'Hótel Harpa',
-                position: 'Hotel',
-                email: 'sigrune@harpa.is',
-                rooms: 342,
-                lastSent: '2017/01/25',
-                invoice: '$112,000'
-            },
-            {
-                id: '3',
-                name: 'Hótel Hellnir',
-                position: 'Hotel',
-                email: 'hellnir@hellnir.is',
-                rooms: 61,
-                lastSent: '2017/04/25',
-                invoice: '$320'
-            },
-            {
-                id: '4',
-                name: 'Hótel Rangá',
-                position: 'Guesthouse',
-                email: 'gydasol@ranga.is',
-                rooms: 63,
-                lastSent: '2017/07/25',
-                invoice: '$1700'
-            },
-            {
-                id: '5',
-                name: 'Hótel Venus',
-                position: 'Guesthouse',
-                email: 'elli@hotmale.com',
-                rooms: 12,
-                lastSent: '2017/03/29',
-                invoice: '$4330'
-            },
-            {
-                id: '6',
-                name: 'Lónkot Bucolic Resort',
-                position: 'Guesthouse',
-                email: 'lonkot@lonkot.is',
-                rooms: 7,
-                lastSent: '2007/11/28',
-                invoice: '$162'
-            },
-            {
-                id: '7',
-                name: 'Snorralaug',
-                position: 'Hotel',
-                email: 'snorri@betel.com',
-                rooms: 12,
-                lastSent: '2017/12/22',
-                invoice: '$8690'
-            },
-            {
-                id: '8',
-                name: 'Snæfell Hotel',
-                position: 'Hotel',
-                email: 'snaefell@snaefell.is',
-                rooms: 51,
-                lastSent: '2017/11/13',
-                invoice: '$183,000'
+        this.router.put('/:resortId', this.jsonParser, (req, res) => {
+            const id = req.params.resortId;
+            const updateData = req.body;
+            if (Object.keys(updateData).length) {
+                if (!updateData.metadata) {
+                    updateData.metadata = {};
+                }
+                updateData.metadata.updateDate = new Date().getTime();
+                this.dao.update(id, updateData)
+                    .then(response => {
+                        res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        res.status(500).json(error);
+                    });
+            } else {
+                res.status(400).send('Insufficient data.');
             }
-        ];
+        });
+
+        this.router.delete('/:resortId', async (req, res) => {
+            const resortId = req.params.resortId;
+            try {
+                await this.dao.remove(resortId);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send('Error writing to DB');
+                return;
+            }
+            try {
+                await this.removedDao.filterList();
+            } catch (error) {
+                console.error(error);
+                res.status(500).send('Error clearing removal list');
+                return;
+            }
+            try {
+                await this.removedDao.create({
+                    removedDate: new Date().getTime()
+                });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send('Error adding removal info');
+                return;
+            }
+            res.status(200).send('OK!');
+        })
     }
-}
+ }

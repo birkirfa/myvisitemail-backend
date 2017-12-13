@@ -1,72 +1,59 @@
-import { BokunDAO } from '../bokun/bokunDAO';
-import { MailchimpDao } from '../mailchimp/mailchimp.dao';
-import {Customer} from "./customer";
+import {CustomerModel} from "./customer.model";
+import {GenericDao} from "../generic.dao";
+import {MailchimpDao} from "../mailchimp/mailchimp.dao";
+import {ResortCustomer} from "./customer";
 
-export class CustomerDao {
-    private bokun: BokunDAO;
-    private mailchimp: MailchimpDao;
+export class CustomerDao extends GenericDao {
+    mailchimp: MailchimpDao;
+
     constructor () {
+        const customer = new CustomerModel(false);
+        super(customer.getSchema(), 'resort-customers');
         this.mailchimp = new MailchimpDao('');
-        this.bokun = new BokunDAO();
     }
 
-    private getRoomCount (products) {
-        let rooms = 0;
-        for (let key in products) {
-            let product = products[key];
-            let item = product[product['productCategory'].toLowerCase()];
-            for (let key in item['roomTypes']) {
-                let roomType = item['roomTypes'][key];
-                rooms += roomType['roomCount'];
+    private getReportsByListId(listId: string, reports) {
+        return reports.filter(report => {
+            return report.list_id === listId;
+        })
+    }
+
+    public async getReportsByCustomerEmail (eMail: string) {
+        let mailLists = (await this.mailchimp.getLists()).lists;
+        let reports = (await this.mailchimp.getReports()).reports;
+        let customerReports = [];
+        for (let key in mailLists) {
+            let mailList = mailLists[key];
+            if (mailList.campaign_defaults &&
+                mailList.campaign_defaults.from_email === eMail) {
+                customerReports = customerReports.concat(
+                    this.getReportsByListId(mailList.id, reports)
+                );
             }
         }
-        return rooms;
-    }
-
-    getLatestReportByListId (listId, reports) {
-        let listReports = reports.filter(val => val.list_id === listId);
-        listReports.sort((reportA, reportB) => {
-            return new Date(reportA.send_time).getTime() < new Date(reportB.send_time).getTime();
+        customerReports.sort((reportA, reportB) => {
+            return new Date(reportA.send_time).getTime() -
+                new Date(reportB.send_time).getTime();
         });
-        return listReports;
+        return customerReports;
     }
 
-    public async getCustomerList () {
-        const productLists = await this.bokun.getProductList();
-        let mailingLists = await this.mailchimp.getLists();
-        let mailReports = await this.mailchimp.getReports();
-        mailReports = mailReports.reports;
-        mailingLists = mailingLists.lists;
-        return await Promise.all(
-            productLists['map'](async value => {
-                let mailList;
-                for (let key in mailingLists) {
-                    if (mailingLists[key]['name'] === value['title']) {
-                        mailList = mailingLists[key];
-                        break;
-                    }
-                }
-                let products = await this.bokun.getProductsFromListById(value['id']);
-                if (mailList) {
-                    let listReports = this.getLatestReportByListId (mailList.id, mailReports);
-                    return new Customer(
-                        mailList.contact.company,
-                        'POSITION?',
-                        mailList.campaign_defaults.from_email,
-                        this.getRoomCount (products),
-                        listReports,
-                        'INVOICE?'
-                    );
-                } else {
-                    return new Customer(
-                        value['title'],
-                        '',
-                        '',
-                        '',
-                        [],
-                        '');
-                }
-            })
-        );
+    public getAll() : Promise<ResortCustomer[]> {
+        return super.getAll();
+    }
+
+    public async getCustomerById (customerId) : Promise<ResortCustomer> {
+        let result;
+        try {
+            result = await this.querySingle({ _id: customerId });
+        } catch (error) {
+            return Promise.reject('Resort not found!');
+        }
+
+        return result;
+    }
+
+    public querySingle(queryObj): Promise<ResortCustomer> {
+        return super.querySingle(queryObj);
     }
 }

@@ -42,11 +42,12 @@ app.get('/', (req, res) => {
 });
 
 app.all('/*', cors(options), (req, res, next) => {
-    if (req.headers['origin'] && whiteList.isAllowed(req.headers['origin'])) {
-        next ();
-    } else {
-        res.status(401).send('Authorization failure for ' + req.headers.origin);
-    }
+    next ();
+    // if (req.headers['origin'] && whiteList.isAllowed(req.headers['origin'])) {
+    //     next ();
+    // } else {
+    //     res.status(401).send('Authorization failure for ' + req.headers.origin);
+    // }
 });
 
 routes.registerAll();
