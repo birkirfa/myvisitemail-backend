@@ -1,10 +1,10 @@
-import {BaseModel} from "../base.model";
+import {BaseModel} from '../base.model';
 
 export class RemovedCustomerModel extends BaseModel {
 
     constructor(schemaObj) {
         if (!schemaObj) {
-            let fullModel = {
+            const fullModel = {
                 removedDate: {
                     type: Number,
                     required: true

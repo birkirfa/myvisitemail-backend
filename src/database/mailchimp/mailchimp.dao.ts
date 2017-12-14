@@ -1,12 +1,12 @@
 import * as Mailchimp from 'mailchimp-api-v3';
-import { MailingList } from "./MailchimpList";
-import { MailLists} from "./MailLists";
+import { IMailLists, IMailingList, IMailchimpTemplateFolder, IMailchimpTemplate } from './mailchimp.model';
+import { IResortCustomerTemplate } from '../resort-customers/resort-customers.model';
 
 export class MailchimpDao {
     private mailchimpApiKey = '579e812841299b40988a9bd905d2ac9f-us17';
     private mailchimp: Mailchimp;
 
-    constructor(apiKey: string) {
+    constructor(apiKey?: string) {
         this.mailchimp = new Mailchimp(apiKey || this.mailchimpApiKey);
     }
 
@@ -22,11 +22,11 @@ export class MailchimpDao {
         return false;
     }
 
-    public getLists() : Promise<MailLists> {
+    public getLists(): Promise<IMailLists> {
         return this.mailchimp.get('/lists');
     }
 
-    public getListById(listId: string) : Promise<MailingList> {
+    public getListById(listId: string): Promise<IMailingList> {
         return this.mailchimp.get('/lists/' + listId);
     }
 
@@ -149,5 +149,39 @@ export class MailchimpDao {
 
     public getReportsByCampaignId(campaignId: string) {
         return this.mailchimp.get('/reports/' + campaignId);
+    }
+
+    public createTemplateFolder(name: string): IMailchimpTemplateFolder {
+        return this.mailchimp.post('/template-folders', { name: name });
+    }
+
+    public getTemplate(folderId: string, templateName: string): Promise<IMailchimpTemplate> {
+        return new Promise<IMailchimpTemplate>((resolve, reject) => {
+            try {
+                resolve(null);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public createTemplate(template: IResortCustomerTemplate) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    public updateTemplate(templateId: string) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 }

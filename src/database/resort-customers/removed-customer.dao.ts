@@ -1,5 +1,5 @@
-import {RemovedCustomerModel} from "./removed-customer";
-import {GenericDao} from "../generic.dao";
+import { GenericDao } from '../generic.dao';
+import { RemovedCustomerModel } from './removed-customer.model';
 
 export class RemovedCustomerDao extends GenericDao {
 
@@ -8,16 +8,18 @@ export class RemovedCustomerDao extends GenericDao {
         super(removedCustomer.getSchema(), 'removed-customers');
     }
 
-    async filterList () {
-        let results = await this.getAll();
-        let condition = new Date().setDate(new Date().getDate()-7);
-        let returnValues = [];
-        for (let key in results) {
-            let deletion = results[key];
-            if (deletion.removedDate && deletion.removedDate < condition) {
-                await this.remove(deletion[key]._id);
-            } else {
-                returnValues.push(deletion);
+    filterList() {
+        const results = this.getAll();
+        const condition = new Date().setDate(new Date().getDate() - 7);
+        const returnValues = [];
+        for (const key in results) {
+            if (results[key]) {
+                const deletion = results[key];
+                if (deletion.removedDate && deletion.removedDate < condition) {
+                    this.remove(deletion[key]._id);
+                } else {
+                    returnValues.push(deletion);
+                }
             }
         }
         return returnValues;

@@ -1,5 +1,5 @@
-import { BokunDAO } from '../database/bokun/bokunDAO';
-import * as bodyParser from "body-parser";
+import { BokunDAO } from '../database/bokun/bokun.dao';
+import * as bodyParser from 'body-parser';
 import * as Express from 'express';
 
 const jsonParser = bodyParser.json();
