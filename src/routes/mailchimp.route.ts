@@ -171,13 +171,7 @@ export class MailchimpRoute {
 
         this.router.get('/email-template/:templateId', (req, res) => {
             const templateId = req.params.templateId;
-            this.dao.getTemplate(templateId)
-                .then(result => {
-                    res.status(200).send(result);
-                })
-                .catch(error => {
-                    res.status(500).send(error);
-                });
+
         });
         
         this.router.put('/email-template', (req, res) => {
@@ -186,17 +180,12 @@ export class MailchimpRoute {
 
         this.router.put('/email-template/:templateId', this.jsonParser, (req, res) => {
             const templateId = req.params.templateId;
-            this.dao.updateTemplate(templateId)
-                .then(result => {
-                    res.status(200).send(result);
-                })
-                .catch(error => {
-                    res.status(500).send(error);
-                });
+            const templateData = req.body;
+
         });
 
         this.router.post('/email-template', this.jsonParser, (req, res) => {
-
+            const templateData = req.body;
         });
     }
 }

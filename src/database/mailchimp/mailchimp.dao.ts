@@ -1,11 +1,12 @@
 import * as Mailchimp from 'mailchimp-api-v3';
-import { IMailLists, IMailingList } from './mailchimp.model';
+import { IMailLists, IMailingList, IMailchimpTemplateFolder, IMailchimpTemplate } from './mailchimp.model';
+import { IResortCustomerTemplate } from '../resort-customers/resort-customers.model';
 
 export class MailchimpDao {
     private mailchimpApiKey = '579e812841299b40988a9bd905d2ac9f-us17';
     private mailchimp: Mailchimp;
 
-    constructor(apiKey: string) {
+    constructor(apiKey?: string) {
         this.mailchimp = new Mailchimp(apiKey || this.mailchimpApiKey);
     }
 
@@ -150,17 +151,21 @@ export class MailchimpDao {
         return this.mailchimp.get('/reports/' + campaignId);
     }
 
-    public getTemplate(templateId: string) {
-        return new Promise<any>((resolve, reject) => {
+    public createTemplateFolder(name: string): IMailchimpTemplateFolder {
+        return this.mailchimp.post('/template-folders', { name: name });
+    }
+
+    public getTemplate(folderId: string, templateName: string): Promise<IMailchimpTemplate> {
+        return new Promise<IMailchimpTemplate>((resolve, reject) => {
             try {
-                resolve();
+                resolve(null);
             } catch (error) {
                 reject(error);
             }
         });
     }
 
-    public createTemplate(templateId: string) {
+    public createTemplate(template: IResortCustomerTemplate) {
         return new Promise<any>((resolve, reject) => {
             try {
                 resolve();

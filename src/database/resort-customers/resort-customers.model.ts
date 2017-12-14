@@ -38,7 +38,7 @@ export interface IResortCustomer {
     invoice: number;
     reports: any[];
     backgroundId: string;
-    metadata: Metadata;
+    metadata: IMetadata;
 }
 
 export interface ICustomerContact {
@@ -51,28 +51,13 @@ export interface ICompany extends ICustomerContact {
     address: string;
 }
 
-export class Metadata {
-    private _creationDate: number;
-    private _updateDate: number;
+export interface IMetadata {
+    creationDate: number;
+    updateDate: number;
+}
 
-    constructor() {
-        this._creationDate = new Date().getTime();
-        this._updateDate = new Date().getTime();
-    }
-
-    public get creationDate(): number {
-        return this._creationDate;
-    }
-
-    public set creationDate(value: number) {
-        this._creationDate = value;
-    }
-
-    public get updateDate(): number {
-        return this._updateDate;
-    }
-
-    public set updateDate(value: number) {
-        this._updateDate = value;
-    }
+export interface IResortCustomerTemplate {
+    name: string;
+    html: string;
+    folderId: string; // folder_id
 }
