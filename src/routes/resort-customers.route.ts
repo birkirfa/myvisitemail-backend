@@ -5,7 +5,6 @@ import { RemovedCustomerDao } from '../database/resort-customers/removed-custome
 import { MailchimpDao } from '../database/mailchimp/mailchimp.dao';
 import { IResortCustomer, IResortCustomerTemplate } from '../database/resort-customers/resort-customers.model';
 import { FileDao } from '../database/files/files.dao';
-import { error } from 'util';
 
 export class ResortCustomersRoute {
     router: Express.Router;
@@ -56,17 +55,17 @@ export class ResortCustomersRoute {
                                 customer.backgroundId = file.file;
                                 res.status(200).json(customer);
                             })
-                            .catch(er => {
-                                console.error(er);
-                                res.status(500).send(er);
+                            .catch(error => {
+                                console.error(error);
+                                res.status(500).send(error);
                             });
                     } else {
                         res.status(200).json(customer);
                     }
                 })
-                .catch(err => {
-                    console.error(err);
-                    res.status(500).send(err);
+                .catch(error => {
+                    console.error(error);
+                    res.status(500).send(error);
                 });
         });
 
