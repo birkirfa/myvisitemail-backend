@@ -8,8 +8,8 @@ export class FileDao extends GenericDao {
         super(file.getSchema(), 'files');
     }
 
-    public getAllFiles(): Promise<any[]> {
-        return new Promise<any>((resolve, reject) => {
+    public getAllFiles(): Promise<IFile[]> {
+        return new Promise<IFile[]>((resolve, reject) => {
             this.getAll()
                 .then((files) => {
                     if (!files) {
@@ -22,8 +22,8 @@ export class FileDao extends GenericDao {
         });
     }
 
-    public getFile(fileId: string | number | MongoClient.Types.ObjectId): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    public getFile(fileId: string | number | MongoClient.Types.ObjectId): Promise<IFile> {
+        return new Promise<IFile>((resolve, reject) => {
             this.querySingle({ id: fileId })
                 .then((file) => {
                     if (!file) {
@@ -50,8 +50,8 @@ export class FileDao extends GenericDao {
         });
     }
 
-    public createFile(file: IFile): Promise<any> {
-        return new Promise((resolve, reject) => {
+    public createFile(file: IFile): Promise<IFile> {
+        return new Promise<IFile>((resolve, reject) => {
             this.create(file)
                 .then(result => resolve(result))
                 .catch(error => reject(error));

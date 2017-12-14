@@ -4,18 +4,18 @@ import { CustomerDao } from '../database/resort-customers/resort-customer.dao';
 import { RemovedCustomerDao } from '../database/resort-customers/removed-customer.dao';
 import { MailchimpDao } from '../database/mailchimp/mailchimp.dao';
 import { IResortCustomer, IResortCustomerTemplate } from '../database/resort-customers/resort-customers.model';
+import { FileDao } from '../database/files/files.dao';
 
 export class ResortCustomersRoute {
     router: Express.Router;
     jsonParser = bodyParser.json();
     dao: CustomerDao;
     removedDao: RemovedCustomerDao;
-    mailchimpDao: MailchimpDao;
 
     constructor() {
         this.dao = new CustomerDao();
         this.router = Express.Router();
-        this.mailchimpDao = new MailchimpDao();
+
         this.removedDao = new RemovedCustomerDao();
         this.router.get('/all', (req, res) => {
             this.dao.getAll()
@@ -45,15 +45,28 @@ export class ResortCustomersRoute {
 
         this.router.get('/detail/:resortId', (req, res) => {
             const resortId = req.params.resortId;
-            let result;
-            try {
-                result = this.dao.getCustomerById(resortId);
-            } catch (error) {
-                console.error(error);
-                res.status(500).send(error);
-                return;
-            }
-            res.status(200).json(result);
+
+            this.dao.getCustomerById(resortId)
+                .then(customer => {
+                    if (customer.backgroundId) {
+                        const fileDao = new FileDao();
+                        fileDao.getFile(customer.backgroundId)
+                            .then(file => {
+                                customer.backgroundId = file.file;
+                                res.status(200).json(customer);
+                            })
+                            .catch(error => {
+                                console.error(error);
+                                res.status(500).send(error);
+                            });
+                    } else {
+                        res.status(200).json(customer);
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    res.status(500).send(error);
+                });
         });
 
         this.router.get('/reports/:email', (req, res) => {
@@ -66,14 +79,14 @@ export class ResortCustomersRoute {
                 res.status(500).send(error);
                 return;
             }
-            res.status(200).json(result);
+            res.status(204);
         });
 
         this.router.post('/', this.jsonParser, (req, res) => {
             const createData: IResortCustomer = req.body;
             if (Object.keys(createData).length &&
-                createData.company &&
-                createData.company.email) {
+                createData.contact &&
+                createData.contact.email) {
                 createData.metadata = {
                     creationDate: new Date().getTime(),
                     updateDate: null
@@ -82,8 +95,8 @@ export class ResortCustomersRoute {
                 this.dao.createWithUniqueCheck(
                     createData,
                     {
-                        company: {
-                            email: createData.company.email
+                        contact: {
+                            email: createData.contact.email
                         }
                     })
                     .then(response => {
@@ -161,10 +174,7 @@ export class ResortCustomersRoute {
             const folderId = req.params.folderId;
             const templateName = req.params.templateName;
             try {
-                // this.mailchimpDao.getTemplate(folderId)
-                //     .then(template => {
-                //         res.status(200).send(template);
-                //     });
+
             } catch (error) {
                 console.log(error);
                 res.status(500).send(error);
@@ -175,21 +185,6 @@ export class ResortCustomersRoute {
             const templateData: IResortCustomerTemplate = req.body;
             console.log('save', templateData);
             try {
-                if (!templateData.folderId) {
-                    const folder = this.mailchimpDao.createTemplateFolder(templateData.resortName);
-                    console.log('folder created', folder);
-                    templateData.folderId = folder.id;
-                }
-
-                this.mailchimpDao.createTemplate(templateData)
-                    .then(result => {
-                        console.log('result', result);
-                        res.status(201).send(result);
-                    })
-                    .catch(error => {
-                        console.log('error', error);
-                        res.status(500).send(error);
-                    });
 
             } catch (error) {
                 console.log(error);
