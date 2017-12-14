@@ -8,6 +8,8 @@ export class MailchimpDao {
 
     constructor(apiKey?: string) {
         this.mailchimp = new Mailchimp(apiKey || this.mailchimpApiKey);
+
+        // this.removeTemplate('16461').then(res => console.log(res));
     }
 
     public isComplete(campaign) {
@@ -151,37 +153,45 @@ export class MailchimpDao {
         return this.mailchimp.get('/reports/' + campaignId);
     }
 
-    public createTemplateFolder(name: string): IMailchimpTemplateFolder {
-        return this.mailchimp.post('/template-folders', { name: name });
+    public getTemplateById (templateId: string) {
+        return this.mailchimp.get('/templates/' + templateId);
     }
 
-    public getTemplate(folderId: string, templateName: string): Promise<IMailchimpTemplate> {
-        return new Promise<IMailchimpTemplate>((resolve, reject) => {
-            try {
-                resolve(null);
-            } catch (error) {
-                reject(error);
-            }
-        });
+    public getTemplateContentById (templateId: string) {
+        return this.mailchimp.get('/file-manager/files');    // /templates/' + templateId + '/default-content'
     }
 
-    public createTemplate(template: IResortCustomerTemplate) {
-        return new Promise<any>((resolve, reject) => {
-            try {
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+    public createTemplate (templateData: IResortCustomerTemplate) {
+        return this.mailchimp.post(
+            '/templates', templateData
+        );
     }
 
-    public updateTemplate(templateId: string) {
-        return new Promise<any>((resolve, reject) => {
-            try {
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+    public updateTemplate (templateId, templateData: IResortCustomerTemplate) {
+        return this.mailchimp.patch(
+            '/templates/' + templateId, templateData
+        );
+    }
+
+    public removeTemplate (templateId: string) {
+        return this.mailchimp.delete('/templates/' + templateId);
+    }
+
+    public getFolders () {
+        return this.mailchimp.get('/template-folders/');
+    }
+
+    public getFolderById (id: number) {
+        return this.mailchimp.get('/template-folders/' + id);
+    }
+
+    public createFolder (folderName: string) {
+        return this.mailchimp.post(
+            '/template-folders', {name: folderName}
+        );
+    }
+
+    public removeFolder (folderId) {
+        return this.mailchimp.delete('/template-folders/' + folderId);
     }
 }

@@ -9,6 +9,11 @@ export interface IResortCustomer {
     reports: any[];
     backgroundId: string;
     metadata: IMetadata;
+    templateFolderId: string;
+    bookedTemplate: ITemplateData;
+    beforeCheckInTemplate: ITemplateData;
+    afterCheckOutTemplate: ITemplateData;
+    cancellationTemplate: ITemplateData;
 }
 
 export interface ICustomerContact {
@@ -27,4 +32,9 @@ export interface IResortCustomerTemplate {
     name: string;
     html: string;
     folderId: string; // folder_id
+}
+
+export interface ITemplateData {
+    templateId: string;
+    html: string;
 }

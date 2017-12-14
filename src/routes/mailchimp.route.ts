@@ -76,6 +76,17 @@ export class MailchimpRoute {
                 });
         });
 
+        this.router.put('/template/:templateId', this.jsonParser, (req, res) => {
+            this.dao.updateTemplate(req.params.templateId, req.body)
+                .then((result) => {
+                    res.status(200).json(result);
+                })
+                .catch((error) => {
+                    console.log(error);
+                    res.status(500).send(error);
+                });
+        });
+
         this.router.post('/list', this.jsonParser, (req, res) => {
             this.dao.createList(req.body)
                 .then((result) => {
