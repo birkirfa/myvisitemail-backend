@@ -16,16 +16,14 @@ export class CustomerModel extends BaseModel {
             phone: {
                 type: String,
                 required: true,
+            },
+            address: {
+                type: String,
+                required: true,
             }
         };
         if (!schemaObj) {
             const fullModel = {
-                company: {
-                    address: {
-                        type: String,
-                        required: true,
-                    }
-                },
                 contact: baseCustomer,
                 area: {
                     type: String,
@@ -53,7 +51,7 @@ export class CustomerModel extends BaseModel {
                     }
                 }
             };
-            fullModel.company = extend(fullModel.company, baseCustomer);
+            fullModel.contact = extend(fullModel.contact, baseCustomer);
             super(fullModel);
         } else {
             super (schemaObj);
