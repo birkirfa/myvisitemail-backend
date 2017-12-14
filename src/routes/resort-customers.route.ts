@@ -60,7 +60,9 @@ export class ResortCustomersRoute {
                                 console.error(er);
                                 res.status(500).send(er);
                             });
-                        }
+                    } else {
+                        res.status(200).json(customer);
+                    }
                 })
                 .catch(err => {
                     console.error(err);
