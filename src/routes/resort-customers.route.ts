@@ -84,6 +84,7 @@ export class ResortCustomersRoute {
 
         this.router.post('/', this.jsonParser, (req, res) => {
             const createData: IResortCustomer = req.body;
+            console.log(createData);
             if (Object.keys(createData).length &&
                 createData.contact &&
                 createData.contact.email) {
@@ -117,6 +118,7 @@ export class ResortCustomersRoute {
         this.router.put('/:resortId', this.jsonParser, (req, res) => {
             const id = req.params.resortId;
             const updateData = req.body;
+            delete updateData._id;
             if (Object.keys(updateData).length) {
                 if (!updateData.metadata) {
                     updateData.metadata = {};
@@ -127,6 +129,7 @@ export class ResortCustomersRoute {
                         res.status(200).json(response);
                     })
                     .catch(error => {
+                        console.error(error);
                         res.status(500).json(error);
                     });
             } else {

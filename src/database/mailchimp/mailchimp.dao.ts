@@ -194,4 +194,56 @@ export class MailchimpDao {
     public removeFolder (folderId) {
         return this.mailchimp.delete('/template-folders/' + folderId);
     }
+
+    public createAndTestCampaign (templateData, emails) {
+        return new Promise <any> ((resolve, reject) => {
+            this.updateTemplate(templateData.templateId, templateData.data)
+                .then(() => {
+                    this.createCampaign(
+                        {
+                            type: 'regular',
+                            settings: {
+                                title: "Test campaign",
+                                template_id: Number.parseInt(templateData.templateId),
+                                from_name: 'Test sender',
+                                reply_to: 'mveDevs@gmail.com',
+                                subject_line: 'Test campaign'
+                            }
+                        })
+                        .then(result => {
+                            this.performCampaignAction(result.id, 'test', {
+                                test_emails: emails,
+                                send_type: 'html'
+                            }).then(res => {
+                                resolve('Test email has been sent.');
+                            }).catch(err => {
+                                if (/This campaign cannot be tested:/.test(err.detail)) {
+                                    this.deleteCampaign(result.id)
+                                        .then(() => resolve(err.detail))
+                                        .catch(error => reject(error));
+                                } else {
+                                    reject(err);
+                                }
+                            });
+                        })
+                        .catch(err => reject(err));
+                })
+                .catch(err => reject(err));
+        });
+
+    }
+
+    public async clearTestCampaignsByTemplateUsed (tempId: number) {
+        let campaigns = await this.getCampaigns();
+        let promises = [];
+        for (let key in campaigns) {
+            let campaign = campaigns[key];
+            if (campaign.settings &&
+                campaign.settings.template_id === tempId &&
+                campaign.settings.title === "Test campaign") {
+                promises.push(this.deleteCampaign(campaign.id));
+            }
+        }
+        return await Promise.all(promises);
+    }
 }

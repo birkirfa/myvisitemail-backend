@@ -10,10 +10,10 @@ export interface IResortCustomer {
     backgroundId: string;
     metadata: IMetadata;
     templateFolderId: string;
-    bookedTemplate: ITemplateData;
-    beforeCheckInTemplate: ITemplateData;
-    afterCheckOutTemplate: ITemplateData;
-    cancellationTemplate: ITemplateData;
+    booked: ITemplateData;
+    'check-in': ITemplateData;
+    'check-out': ITemplateData;
+    cancellation: ITemplateData;
 }
 
 export interface ICustomerContact {

@@ -61,38 +61,42 @@ export class CustomerDao extends GenericDao {
 
     public async removeComplete (customerId) {
         let customer = <IResortCustomer> await this.querySingle({_id: customerId});
-        await this.mailchimp.removeTemplate(customer.bookedTemplate.templateId);
-        await this.mailchimp.removeTemplate(customer.beforeCheckInTemplate.templateId);
-        await this.mailchimp.removeTemplate(customer.afterCheckOutTemplate.templateId);
-        await this.mailchimp.removeTemplate(customer.cancellationTemplate.templateId);
+        await this.mailchimp.removeTemplate(customer.booked.templateId);
+        await this.mailchimp.removeTemplate(customer['check-in'].templateId);
+        await this.mailchimp.removeTemplate(customer['check-out'].templateId);
+        await this.mailchimp.removeTemplate(customer.cancellation.templateId);
         await this.mailchimp.removeFolder(customer.templateFolderId);
         return await super.remove(customerId);
     }
 
     public async update (itemId, updateData) {
-        let updateTemplate :IResortCustomerTemplate;
-        updateTemplate.html = updateData.bookedTemplate.html;   //templateId
+        let updateTemplate :IResortCustomerTemplate = {
+            name: '',
+            html: '',
+            folderId: updateData.templateFolderId
+        };
+        updateTemplate.html = updateData.booked.html;   //templateId
         updateTemplate.name = 'bookedTemplate';
         await this.mailchimp.updateTemplate(
-            updateData.bookedTemplate.templateId,
+            updateData.booked.templateId,
             updateTemplate
         );
-        updateTemplate.html = updateData.beforeCheckInTemplate.html;   //templateId
+        updateTemplate.html = updateData['check-in'].html;   //templateId
         updateTemplate.name = 'beforeTemplate';
         await this.mailchimp.updateTemplate(
-            updateData.beforeCheckInTemplate.templateId,
+            updateData['check-in'].templateId,
             updateTemplate
         );
-        updateTemplate.html = updateData.afterCheckOutTemplate.html;   //templateId
+        updateTemplate.html = updateData['check-out'].html;   //templateId
         updateTemplate.name = 'afterTemplate';
         await this.mailchimp.updateTemplate(
-            updateData.afterCheckOutTemplate.templateId,
+            updateData['check-out'].templateId,
             updateTemplate
         );
-        updateTemplate.html = updateData.cancellationTemplate.html;   //templateId
+        updateTemplate.html = updateData.cancellation.html;   //templateId
         updateTemplate.name = 'cancelTemplate';
         await this.mailchimp.updateTemplate(
-            updateData.cancellationTemplate.templateId,
+            updateData.cancellation.templateId,
             updateTemplate
         );
         return await super.update(itemId, updateData);
@@ -100,7 +104,11 @@ export class CustomerDao extends GenericDao {
 
     // check the workings then maybe add a toJSON method
     public async createWithUniqueCheck (createData: IResortCustomer, queryObj) {
-        let templateData :IResortCustomerTemplate;
+        let templateData :IResortCustomerTemplate = {
+            name: '',
+            html: '',
+            folderId: ''
+        };
         templateData.html = 'testing';
         const folder = await this.mailchimp.createFolder(createData.contact.name);
         templateData.folderId = folder.id;
@@ -113,22 +121,23 @@ export class CustomerDao extends GenericDao {
         templateData.name = 'cancelTemplate';
         const cancel = await this.mailchimp.createTemplate(templateData);
         createData.templateFolderId = folder.id;
-        createData.bookedTemplate = <ITemplateData> {
+        createData.booked = <ITemplateData> {
             templateId: booked.id,
             html: templateData.html
         };
-        createData.beforeCheckInTemplate = <ITemplateData> {
+        createData['check-in'] = <ITemplateData> {
             templateId: before.id,
             html: templateData.html
         };
-        createData.afterCheckOutTemplate = <ITemplateData> {
+        createData['check-out'] = <ITemplateData> {
             templateId: after.id,
             html: templateData.html
         };
-        createData.cancellationTemplate = <ITemplateData> {
+        createData.cancellation = <ITemplateData> {
             templateId: cancel.id,
             html: templateData.html
         };
+
         return await super.createWithUniqueCheck(createData, queryObj);
     }
 }

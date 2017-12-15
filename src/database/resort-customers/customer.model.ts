@@ -51,10 +51,10 @@ export class CustomerModel extends BaseModel {
                 templateFolderId: {
                     type: String
                 },
-                bookedTemplate: templateData,
-                beforeCheckInTemplate: templateData,
-                afterCheckOutTemplate: templateData,
-                cancellationTemplate: templateData,
+                booked: templateData,
+                'check-in': templateData,
+                'check-out': templateData,
+                cancellation: templateData,
                 metadata: {
                     creationDate: {
                         type: Number,

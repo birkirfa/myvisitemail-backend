@@ -175,28 +175,31 @@ export class MailchimpRoute {
                 res.status(500).send('Attempted to schedule a campaign with no schedule time!');
             }
         });
-        
-        this.router.get('/email-template', (req, res) => {
-            res.status(400).send('Insufficient data.');
+
+        this.router.post('/test', this.jsonParser, (req, res) => {
+            const testData = req.body;
+            this.dao.createAndTestCampaign(testData.templateData, testData.emails)
+                .then(resp => {
+                    res.status(200).json({
+                        message: resp
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    res.status(500).json(err)
+                });
         });
 
-        this.router.get('/email-template/:templateId', (req, res) => {
-            const templateId = req.params.templateId;
-
-        });
-        
-        this.router.put('/email-template', (req, res) => {
-            res.status(400).send('Insufficient data.');
-        });
-
-        this.router.put('/email-template/:templateId', this.jsonParser, (req, res) => {
-            const templateId = req.params.templateId;
-            const templateData = req.body;
-
-        });
-
-        this.router.post('/email-template', this.jsonParser, (req, res) => {
-            const templateData = req.body;
+        this.router.delete('/test/:templateId', async (req, res) => {
+            let result;
+            let tempId = Number.parseInt(req.params.templateId);
+            try {
+                result = await this.dao.clearTestCampaignsByTemplateUsed(tempId);
+            } catch (err) {
+                res.status(500).json(err);
+                return;
+            }
+            res.status(200).json(result);
         });
     }
 }
