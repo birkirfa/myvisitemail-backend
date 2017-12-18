@@ -84,7 +84,6 @@ export class ResortCustomersRoute {
 
         this.router.post('/', this.jsonParser, (req, res) => {
             const createData: IResortCustomer = req.body;
-            console.log(createData);
             if (Object.keys(createData).length &&
                 createData.contact &&
                 createData.contact.email) {
@@ -104,7 +103,7 @@ export class ResortCustomersRoute {
                         res.status(200).json(response);
                     })
                     .catch(error => {
-                        res.status(500).json(error);
+                        res.status(500).json({message: 'Error saving to database'});
                     });
             } else {
                 res.status(400).send('Insufficient data.');
@@ -130,7 +129,7 @@ export class ResortCustomersRoute {
                     })
                     .catch(error => {
                         console.error(error);
-                        res.status(500).json(error);
+                        res.status(500).json({message: 'Error saving to database'});
                     });
             } else {
                 res.status(400).send('Insufficient data.');

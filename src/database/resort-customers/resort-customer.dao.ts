@@ -69,35 +69,88 @@ export class CustomerDao extends GenericDao {
         return await super.remove(customerId);
     }
 
+    private handleTemplate (templateId, templateData) {
+        if (templateId) {
+            return this.mailchimp.updateTemplate(
+                templateId,
+                templateData
+            );
+        } else {
+            return this.mailchimp.createTemplate(templateData);
+        }
+    }
+
     public async update (itemId, updateData) {
+        const folderId = updateData.templateFolderId ? updateData.templateFolderId :
+            (await this.mailchimp.createFolder(updateData.contact.name)).id;
         let updateTemplate :IResortCustomerTemplate = {
             name: '',
             html: '',
-            folderId: updateData.templateFolderId
+            folderId: folderId
         };
-        updateTemplate.html = updateData.booked.html;   //templateId
+
+        let templatePromises = [];
+        let templateId;
+        if (updateData.booked) {
+            updateTemplate.html = updateData.booked.html;   //templateId
+            templateId = updateData.booked.templateId;
+        } else {
+            updateTemplate.html = 'New template';   //templateId
+            templateId = false;
+        }
+
         updateTemplate.name = 'bookedTemplate';
-        await this.mailchimp.updateTemplate(
-            updateData.booked.templateId,
-            updateTemplate
+        templatePromises.push(
+            this.handleTemplate(
+                templateId,
+                updateTemplate
+            )
         );
-        updateTemplate.html = updateData['check-in'].html;   //templateId
+
+        if (updateData['check-in']) {
+            updateTemplate.html = updateData['check-in'].html;   //templateId
+            templateId = updateData.booked.templateId;
+        } else {
+            updateTemplate.html = 'New template';   //templateId
+            templateId = false;
+        }
         updateTemplate.name = 'beforeTemplate';
-        await this.mailchimp.updateTemplate(
-            updateData['check-in'].templateId,
-            updateTemplate
+        templatePromises.push(
+            this.handleTemplate(
+                templateId,
+                updateTemplate
+            )
         );
-        updateTemplate.html = updateData['check-out'].html;   //templateId
+
+        if (updateData['check-out']) {
+            updateTemplate.html = updateData['check-out'].html;
+            templateId = updateData.booked.templateId;
+        } else {
+            updateTemplate.html = 'New template';
+            templateId = false;
+        }
         updateTemplate.name = 'afterTemplate';
-        await this.mailchimp.updateTemplate(
-            updateData['check-out'].templateId,
-            updateTemplate
+        templatePromises.push(
+            this.handleTemplate(
+                templateId,
+                updateTemplate
+            )
         );
+
+        if (updateData.booked) {
+            updateTemplate.html = updateData.cancellation.html;   //templateId
+            templateId = updateData.cancellation.templateId;
+        } else {
+            updateTemplate.html = 'New template';   //templateId
+            templateId = false;
+        }
         updateTemplate.html = updateData.cancellation.html;   //templateId
         updateTemplate.name = 'cancelTemplate';
-        await this.mailchimp.updateTemplate(
-            updateData.cancellation.templateId,
-            updateTemplate
+        templatePromises.push(
+            this.handleTemplate(
+                templateId,
+                updateTemplate
+            )
         );
         return await super.update(itemId, updateData);
     }
@@ -106,10 +159,9 @@ export class CustomerDao extends GenericDao {
     public async createWithUniqueCheck (createData: IResortCustomer, queryObj) {
         let templateData :IResortCustomerTemplate = {
             name: '',
-            html: '',
+            html: 'New template',
             folderId: ''
         };
-        templateData.html = 'testing';
         const folder = await this.mailchimp.createFolder(createData.contact.name);
         templateData.folderId = folder.id;
         templateData.name = 'bookedTemplate';
