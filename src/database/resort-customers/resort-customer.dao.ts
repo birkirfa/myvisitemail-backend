@@ -92,10 +92,10 @@ export class CustomerDao extends GenericDao {
         let templatePromises = [];
         let templateId;
         if (updateData.booked) {
-            updateTemplate.html = updateData.booked.html;   //templateId
+            updateTemplate.html = updateData.booked.html;
             templateId = updateData.booked.templateId;
         } else {
-            updateTemplate.html = 'New template';   //templateId
+            updateTemplate.html = 'New template';
             templateId = false;
         }
 
@@ -108,10 +108,10 @@ export class CustomerDao extends GenericDao {
         );
 
         if (updateData['check-in']) {
-            updateTemplate.html = updateData['check-in'].html;   //templateId
+            updateTemplate.html = updateData['check-in'].html;
             templateId = updateData.booked.templateId;
         } else {
-            updateTemplate.html = 'New template';   //templateId
+            updateTemplate.html = 'New template';
             templateId = false;
         }
         updateTemplate.name = 'beforeTemplate';
@@ -137,14 +137,13 @@ export class CustomerDao extends GenericDao {
             )
         );
 
-        if (updateData.booked) {
-            updateTemplate.html = updateData.cancellation.html;   //templateId
+        if (updateData.cancellation) {
+            updateTemplate.html = updateData.cancellation.html;
             templateId = updateData.cancellation.templateId;
         } else {
             updateTemplate.html = 'New template';   //templateId
             templateId = false;
         }
-        updateTemplate.html = updateData.cancellation.html;   //templateId
         updateTemplate.name = 'cancelTemplate';
         templatePromises.push(
             this.handleTemplate(
@@ -152,16 +151,75 @@ export class CustomerDao extends GenericDao {
                 updateTemplate
             )
         );
+
+        if (!updateData.listId) {
+            const list = await this.mailchimp.createList({
+                "name": updateData.contact.name,
+                "contact":{
+                    "company":updateData.contact.name,
+                    "address1":updateData.contact.address,
+                    "address2":"",
+                    "city":"",
+                    "state":"",
+                    "zip":"",
+                    "country":"",
+                    "phone":""
+                },
+                "permission_reminder":"",
+                "campaign_defaults":{
+                    "from_name":updateData.contact.name,
+                    "from_email":updateData.contact.email,
+                    "subject":"",
+                    "language":"en"
+                },
+                "email_type_option":true
+            });
+        }
         return await super.update(itemId, updateData);
     }
 
     // check the workings then maybe add a toJSON method
+    /**
+
+     * @param {IResortCustomer} createData
+     * @param queryObj
+     * @returns {Promise<any>}
+     */
     public async createWithUniqueCheck (createData: IResortCustomer, queryObj) {
+        await this.querySingle(queryObj);
         let templateData :IResortCustomerTemplate = {
             name: '',
             html: 'New template',
             folderId: ''
         };
+        let list;
+        try {
+            list = await this.mailchimp.createList({
+                "name": createData.contact.name,
+                "contact":{
+                    "company":createData.contact.name,
+                    "address1":createData.contact.address,
+                    "address2":"",
+                    "city":"",
+                    "state":"",
+                    "zip":"",
+                    "country":"",
+                    "phone":""
+                },
+                "permission_reminder":"Mailchimp generated",
+                "campaign_defaults":{
+                    "from_name":createData.contact.name,
+                    "from_email":createData.contact.email,
+                    "subject":"",
+                    "language":"en"
+                },
+                "email_type_option":true
+            });
+        } catch (err) {
+            console.error(err);
+            return;
+        }
+        createData.listId = list.id;
         const folder = await this.mailchimp.createFolder(createData.contact.name);
         templateData.folderId = folder.id;
         templateData.name = 'bookedTemplate';
@@ -190,6 +248,6 @@ export class CustomerDao extends GenericDao {
             html: templateData.html
         };
 
-        return await super.createWithUniqueCheck(createData, queryObj);
+        return await super.create(createData);
     }
 }

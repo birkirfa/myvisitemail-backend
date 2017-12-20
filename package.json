@@ -29,6 +29,7 @@
     "@types/cors": "^2.8.1",
     "@types/mocha": "^2.2.44",
     "@types/mongoose": "^4.7.25",
+    "node-schedule": "*",
     "axios": "^0.17.1",
     "bcryptjs": "*",
     "body-parser": "^1.17.2",

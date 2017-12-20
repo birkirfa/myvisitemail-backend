@@ -14,6 +14,7 @@ export interface IResortCustomer {
     'check-in': ITemplateData;
     'check-out': ITemplateData;
     cancellation: ITemplateData;
+    listId: string;
 }
 
 export interface ICustomerContact {

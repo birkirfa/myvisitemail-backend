@@ -51,6 +51,9 @@ export class CustomerModel extends BaseModel {
                 templateFolderId: {
                     type: String
                 },
+                listId: {
+                    type: String
+                },
                 booked: templateData,
                 'check-in': templateData,
                 'check-out': templateData,

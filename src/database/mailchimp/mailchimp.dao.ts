@@ -36,6 +36,19 @@ export class MailchimpDao {
         return this.mailchimp.get('/campaigns');
     }
 
+    public async getCampaignsForBooking(bookingId) {
+        let data = await this.mailchimp.get('/campaigns');
+        let regExp = new RegExp(bookingId);
+        let campaignArray = [];
+        for (let i in data['campaigns']) {
+            let campaign = data['campaigns'][i];
+            if (campaign.settings && regExp.test(campaign.settings.title)) {
+                campaignArray.push(campaign);
+            }
+        }
+        return campaignArray;
+    }
+
     public getAutomations() {
         return this.mailchimp.get('/automations');
     }
@@ -46,6 +59,10 @@ export class MailchimpDao {
 
     public updateList(listId: string, listObject: any) {
         return this.mailchimp.patch('/lists/' + listId, listObject);
+    }
+
+    public addMemberToList (listId: string, memberObj: any) {
+        return this.mailchimp.post('/lists/' + listId + '/members', memberObj);
     }
 
     /**
