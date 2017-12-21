@@ -16,8 +16,8 @@ export class BokunDAO {
 
     constructor() {
         this.vendorList = [];
-        this.accessKey = 'a2d9749ac9cd4cb38a79760add3431d0' //'8b7a383322094b8dbfb7ee1fbaea850c';
-        this.secretKey = 'c1938ca317c54de09b0aafb9223c4a0c'//'7eb38618b26a4e72b8adcc743e6281b7';
+        this.accessKey = '8b7a383322094b8dbfb7ee1fbaea850c';// 'a2d9749ac9cd4cb38a79760add3431d0'
+        this.secretKey = '7eb38618b26a4e72b8adcc743e6281b7';// 'c1938ca317c54de09b0aafb9223c4a0c'
         this.hostname = 'api.bokun.io';
         this.axios = axios;
         this.axios.defaults.baseURL = 'https://api.bokun.io';
