@@ -8,8 +8,6 @@ export class MailchimpDao {
 
     constructor(apiKey?: string) {
         this.mailchimp = new Mailchimp(apiKey || this.mailchimpApiKey);
-
-        // this.removeTemplate('16461').then(res => console.log(res));
     }
 
     public isComplete(campaign) {
@@ -139,19 +137,33 @@ export class MailchimpDao {
      */
     public createAndScheduleCampaign(campaignObject: any, date: Date) {
         this.setScheduleMinutes(date);
-
-        this.createCampaign(campaignObject)
-            .then(createdCampaign => {
-                this.performCampaignAction(createdCampaign.id, 'schedule', {
-                    schedule_time: date
-                })
-                    .then(res => {
-                        console.log(res);
+        return new Promise ((resolve, reject) => {
+            this.createCampaign(campaignObject)
+                .then(createdCampaign => {
+                    this.performCampaignAction(createdCampaign.id, 'schedule', {
+                        schedule_time: date
                     })
-                    .error(err => {
-                        console.error(err);
-                    });
-            });
+                    .then(resolve)
+                    .error(reject);
+                });
+        });
+
+    }
+
+    public async clearCampaigns () {
+        const condition = new Date().getDate();
+        const campaigns = (await this.getCampaigns()).campaigns;
+        let removePromises = [];
+        if (campaigns && campaigns.length) {
+            for (let i in campaigns) {
+                let campaign = campaigns[i];
+                let check = new Date (campaign.send_time).getDate();
+                if (condition - check > 365) {
+                    removePromises.push(this.deleteCampaign(campaign.id));
+                }
+            }
+        }
+        return await Promise.all(removePromises);
     }
 
     public deleteCampaign(campaignId: string) {

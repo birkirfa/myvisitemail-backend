@@ -6,8 +6,10 @@ import { WhiteList } from './src/routes/whiteList';
 import { RoutesManager } from './src/routes/routes';
 import { BokunDAO } from "./src/database/bokun/bokun.dao";
 import * as schedule from 'node-schedule';
+import {MailchimpDao} from "./src/database/mailchimp/mailchimp.dao";
 
 const bokun = new BokunDAO();
+const mailchimp = new MailchimpDao('');
 const port = 8000;
 const app: Express.Application = Express();
 const db: DbConfig = new DbConfig();
@@ -54,6 +56,8 @@ app.all('/*', cors(options), (req, res, next) => {
 });
 
 schedule.scheduleJob('0 0 * * *', () => {
-    bokun.checkAndDoCampaigns();
+    mailchimp.clearCampaigns().then(() => {
+        bokun.checkAndDoCampaigns();
+    });
 });
 routes.registerAll();

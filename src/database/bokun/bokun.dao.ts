@@ -111,7 +111,7 @@ export class BokunDAO {
                     if (!customer) {
                         continue;
                     }
-                    if (!booking.status.cancellationDate) {
+                    if (booking && booking.customer && booking.customer.email) {
                         if (campaigns.length) {
                             continue;
                         }
@@ -121,73 +121,75 @@ export class BokunDAO {
                                 "status": "subscribed"
                             });
                         } catch (err) {
+                            console.error(err);
                             // already a member do nothing
                         }
-                        let booked = await this.mailchimpDao.createCampaign({
-                            recipients: {list_id: customer.listId},
-                            type: 'regular',
-                            settings: {
-                                title: booking.id + '_booked',
-                                template_id: parseInt(customer.booked.templateId),
-                                from_name: customer.contact.name,
-                                subject_line: 'Booking of ' + customer.contact.name + ' produt.',
-                                reply_to: customer.contact.email
-                            }
-                        });
-                        await this.mailchimpDao.performCampaignAction(booked.id, 'send', {});
-                        let beforeDate = new Date (
-                            new Date(booking.startDate).getTime() - 3
-                        );
-                        if (new Date().getTime() < beforeDate.getTime()) {
-                            let before = await this.mailchimpDao.createAndScheduleCampaign({
+                        if (booking.status !== 'CANCELLED') {
+                            let booked = await this.mailchimpDao.createCampaign({
                                 recipients: {list_id: customer.listId},
                                 type: 'regular',
                                 settings: {
-                                    title: booking.id + '_check-in',
-                                    template_id: parseInt(customer['check-in'].templateId),
-                                    from_name: customer.contact.name,
-                                    subject_line: 'Booking of ' + customer.contact.name + ' produt.',
-                                    reply_to: customer.contact.email
-                                }
-                            }, beforeDate);
-                        }
-                        let afterDate = new Date (
-                            new Date(booking.endDate).getTime() + 3
-                        );
-                        if (new Date().getTime() < afterDate.getTime()) {
-                            let after = await this.mailchimpDao.createAndScheduleCampaign({
-                                recipients: {list_id: customer.listId},
-                                type: 'regular',
-                                settings: {
-                                    title: booking.id + '_check-out',
-                                    template_id: parseInt(customer['check-out'].templateId),
-                                    from_name: customer.contact.name,
-                                    subject_line: 'Booking of ' + customer.contact.name + ' produt.',
-                                    reply_to: customer.contact.email
-                                }
-                            }, afterDate);
-                        }
-                    } else {
-                        let has = false;
-                        for (let i in campaigns) {
-                            if (/cancellation/.test(campaigns[i].title)) {
-                                has = true;
-                            } else {
-                                await this.mailchimpDao.deleteCampaign(campaigns[i].id);
-                            }
-                        }
-                        if (!has) {
-                            let cancellation = await this.mailchimpDao.createCampaign({
-                                recipients: {list_id: customer.listId},
-                                type: 'regular',
-                                settings: {
-                                    title: booking.id + '_cancellation',
-                                    template_id: customer.cancellation.templateId,
+                                    title: booking.id + '_booked',
+                                    template_id: parseInt(customer.booked.templateId),
                                     from_name: customer.contact.name,
                                     subject_line: 'Booking of ' + customer.contact.name + ' produt.',
                                     reply_to: customer.contact.email
                                 }
                             });
+                            await this.mailchimpDao.performCampaignAction(booked.id, 'send', {});
+                            let beforeDate = new Date(booking.startDate);
+                            beforeDate.setDate(beforeDate.getDate() - 3);
+                            if (new Date().getTime() < beforeDate.getTime()) {
+                                let before = await this.mailchimpDao.createAndScheduleCampaign({
+                                    recipients: {list_id: customer.listId},
+                                    type: 'regular',
+                                    settings: {
+                                        title: booking.id + '_check-in',
+                                        template_id: parseInt(customer['check-in'].templateId),
+                                        from_name: customer.contact.name,
+                                        subject_line: 'Booking of ' + customer.contact.name + ' produt.',
+                                        reply_to: customer.contact.email
+                                    }
+                                }, beforeDate);
+                            }
+                            let afterDate = new Date(booking.endDate);
+                            afterDate.setDate(afterDate.getDate() + 3);
+                            if (new Date().getTime() < afterDate.getTime()) {
+                                let after = await this.mailchimpDao.createAndScheduleCampaign({
+                                    recipients: {list_id: customer.listId},
+                                    type: 'regular',
+                                    settings: {
+                                        title: booking.id + '_check-out',
+                                        template_id: parseInt(customer['check-out'].templateId),
+                                        from_name: customer.contact.name,
+                                        subject_line: 'Booking of ' + customer.contact.name + ' produt.',
+                                        reply_to: customer.contact.email
+                                    }
+                                }, afterDate);
+                            }
+                        } else {
+                            let has = false;
+                            for (let i in campaigns) {
+                                if (/cancellation/.test(campaigns[i].title)) {
+                                    has = true;
+                                } else {
+                                    await this.mailchimpDao.deleteCampaign(campaigns[i].id);
+                                }
+                            }
+                            if (!has) {
+                                let cancellation = await this.mailchimpDao.createCampaign({
+                                    recipients: {list_id: customer.listId},
+                                    type: 'regular',
+                                    settings: {
+                                        title: booking.id + '_cancellation',
+                                        template_id: parseInt(customer.cancellation.templateId),
+                                        from_name: customer.contact.name,
+                                        subject_line: 'Booking of ' + customer.contact.name + ' produt.',
+                                        reply_to: customer.contact.email
+                                    }
+                                });
+                                await this.mailchimpDao.performCampaignAction(cancellation.id, 'send', {});
+                            }
                         }
                     }
                 }

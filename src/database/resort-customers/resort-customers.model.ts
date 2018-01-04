@@ -32,7 +32,7 @@ export interface IMetadata {
 export interface IResortCustomerTemplate {
     name: string;
     html: string;
-    folderId: string; // folder_id
+    folder_id: string; // folder_id
 }
 
 export interface ITemplateData {

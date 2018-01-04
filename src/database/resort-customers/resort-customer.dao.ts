@@ -86,7 +86,7 @@ export class CustomerDao extends GenericDao {
         let updateTemplate :IResortCustomerTemplate = {
             name: '',
             html: '',
-            folderId: folderId
+            folder_id: folderId
         };
 
         let templatePromises = [];
@@ -190,7 +190,7 @@ export class CustomerDao extends GenericDao {
         let templateData :IResortCustomerTemplate = {
             name: '',
             html: 'New template',
-            folderId: ''
+            folder_id: ''
         };
         let list;
         try {
@@ -221,7 +221,7 @@ export class CustomerDao extends GenericDao {
         }
         createData.listId = list.id;
         const folder = await this.mailchimp.createFolder(createData.contact.name);
-        templateData.folderId = folder.id;
+        templateData.folder_id = folder.id;
         templateData.name = 'bookedTemplate';
         const booked =  await this.mailchimp.createTemplate(templateData);
         templateData.name = 'beforeTemplate';
