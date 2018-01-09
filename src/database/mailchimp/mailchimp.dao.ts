@@ -159,7 +159,7 @@ export class MailchimpDao {
                 let campaign = campaigns[i];
                 let check = new Date (campaign.send_time).getDate();
                 if (condition - check > 365) {
-                    removePromises.push(this.deleteCampaign(campaign.id));
+                    removePromises.push(this.deleteCompleteCampaign(campaign));
                 }
             }
         }
@@ -167,7 +167,12 @@ export class MailchimpDao {
     }
 
     public deleteCampaign(campaignId: string) {
-        return this.mailchimp.delete('/campaigns/' + campaignId);
+        return this.mailchimp.delete('/campaigns/' + campaignId)
+    }
+
+    private async deleteCompleteCampaign (campaignObj) {
+        await this.deleteCampaign(campaignObj.id)
+        return this.mailchimp.delete('/lists/' + campaignObj.recipients.list_id);
     }
 
     public getReports() {
