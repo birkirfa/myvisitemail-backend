@@ -231,7 +231,7 @@ export class MailchimpDao {
 
     public createAndTestCampaign (templateData, emails) {
         return new Promise <any> ((resolve, reject) => {
-            this.updateTemplate(templateData.templateId, templateData.data)
+            this.updateTemplate(templateData.templateId, templateData.data.template)
                 .then(() => {
                     this.createCampaign(
                         {
@@ -241,7 +241,7 @@ export class MailchimpDao {
                                 template_id: Number.parseInt(templateData.templateId),
                                 from_name: 'Test sender',
                                 reply_to: 'mveDevs@gmail.com',
-                                subject_line: 'Test campaign'
+                                subject_line: templateData.data.subject || 'Test campaign'
                             }
                         })
                         .then(result => {
@@ -268,14 +268,16 @@ export class MailchimpDao {
     }
 
     public async clearTestCampaignsByTemplateUsed (tempId: number) {
-        let campaigns = await this.getCampaigns();
+        let data = await this.getCampaigns();
         let promises = [];
-        for (let key in campaigns) {
-            let campaign = campaigns[key];
-            if (campaign.settings &&
-                campaign.settings.template_id === tempId &&
-                campaign.settings.title === "Test campaign") {
-                promises.push(this.deleteCampaign(campaign.id));
+        if (data.campaigns) {
+            for (let key in data.campaigns) {
+                let campaign = data.campaigns[key];
+                if (campaign.settings &&
+                    campaign.settings.template_id === tempId &&
+                    campaign.settings.title === 'Test campaign') {
+                    promises.push(this.deleteCampaign(campaign.id));
+                }
             }
         }
         return await Promise.all(promises);
