@@ -152,29 +152,29 @@ export class CustomerDao extends GenericDao {
             )
         );
 
-        if (!updateData.listId) {
-            const list = await this.mailchimp.createList({
-                "name": updateData.contact.name,
-                "contact":{
-                    "company":updateData.contact.name,
-                    "address1":updateData.contact.address,
-                    "address2":"",
-                    "city":"",
-                    "state":"",
-                    "zip":"",
-                    "country":"",
-                    "phone":""
-                },
-                "permission_reminder":"",
-                "campaign_defaults":{
-                    "from_name":updateData.contact.name,
-                    "from_email":updateData.contact.email,
-                    "subject":"",
-                    "language":"en"
-                },
-                "email_type_option":true
-            });
-        }
+        // if (!updateData.listId) {
+        //     const list = await this.mailchimp.createList({
+        //         "name": updateData.contact.name,
+        //         "contact":{
+        //             "company":updateData.contact.name,
+        //             "address1":updateData.contact.address,
+        //             "address2":"",
+        //             "city":"",
+        //             "state":"",
+        //             "zip":"",
+        //             "country":"",
+        //             "phone":""
+        //         },
+        //         "permission_reminder":"Mailchimp generated",
+        //         "campaign_defaults":{
+        //             "from_name":updateData.contact.name,
+        //             "from_email":updateData.contact.email,
+        //             "subject":"",
+        //             "language":"en"
+        //         },
+        //         "email_type_option":true
+        //     });
+        // }
         return await super.update(itemId, updateData);
     }
 
