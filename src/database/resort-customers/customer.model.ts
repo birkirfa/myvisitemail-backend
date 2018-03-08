@@ -1,5 +1,4 @@
 import {BaseModel} from '../base.model';
-import * as extend from 'extend';
 
 export class CustomerModel extends BaseModel {
 
@@ -9,6 +8,9 @@ export class CustomerModel extends BaseModel {
                 type: String
             },
             html: {
+                type: String
+            },
+            subject: {
                 type: String
             }
         };

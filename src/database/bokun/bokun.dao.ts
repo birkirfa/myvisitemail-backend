@@ -111,49 +111,21 @@ export class BokunDAO {
                     let customer = this.getCustomerByName(customers, booking.vendor.title);
                     if (!customer) {
                         continue;
-                    }// list name cmapaign and bookingId meaning its the same as the campaigns
-                    if (booking && booking.customer && booking.customer.email &&
-                        booking.channel && booking.channel.title === this.channel) {
+                    }
+                    // list name cmapaign and bookingId meaning its the same as the campaigns
+                    // add this to make sure the channel booking is checked
+                    // booking.channel && booking.channel.title === this.channel
+                    if (booking && booking.customer && booking.customer.email) {
                         if (campaigns.length) {
                             continue;
                         }
 
-                        let listObj = {
-                            "name": booking.id + '_customerList_' + customer.contact.name,
-                            "contact":{
-                                "company":customer.contact.name,
-                                "address1":customer.contact.address,
-                                "address2": "",
-                                "city": "",
-                                "state": "",
-                                "zip": "",
-                                "country": "",
-                                "phone": ""
-                            },
-                            "permission_reminder": "Mailchimp generated",
-                            "campaign_defaults": {
-                                "from_name": customer.contact.name,
-                                "from_email": customer.contact.email,
-                                "subject": "",
-                                "language": "en"
-                            },
-                            "email_type_option":true
-                        }
                         let campaignList;
                         try {
-                            campaignList = await this.mailchimpDao.createList(listObj);
+                            campaignList = await this.mailchimpDao.addMemberList(booking.customer, customer.contact);
                         } catch (err) {
-                            console.error(err);
-                            // list already exists
-                        }
-                        try {
-                            await this.mailchimpDao.addMemberToList(campaignList.id, { // customer.listId
-                                "email_address": booking.customer.email,
-                                "status": "subscribed"
-                            });
-                        } catch (err) {
-                            console.error(err);
-                            // already a member do nothing
+                            console.error('Creating member list', err);
+                            continue;
                         }
                         if (booking.status !== 'CANCELLED') {
                             let booked;
@@ -165,7 +137,8 @@ export class BokunDAO {
                                         title: booking.id + '_booked',
                                         template_id: parseInt(customer.booked.templateId),
                                         from_name: customer.contact.name,
-                                        subject_line: 'Booking of ' + customer.contact.name + ' produt.',
+                                        subject_line: (customer.booked.subject ||
+                                            'Booking of ' + customer.contact.name + ' produt.'),
                                         reply_to: customer.contact.email
                                     }
                                 });
@@ -192,7 +165,8 @@ export class BokunDAO {
                                             title: booking.id + '_check-in',
                                             template_id: parseInt(customer['check-in'].templateId),
                                             from_name: customer.contact.name,
-                                            subject_line: 'Booking of ' + customer.contact.name + ' produt.',
+                                            subject_line: (customer['check-in'].subject ||
+                                                'Check-in of ' + customer.contact.name + ' produt.'),
                                             reply_to: customer.contact.email
                                         }
                                     }, beforeDate);
@@ -212,7 +186,8 @@ export class BokunDAO {
                                             title: booking.id + '_check-out',
                                             template_id: parseInt(customer['check-out'].templateId),
                                             from_name: customer.contact.name,
-                                            subject_line: 'Booking of ' + customer.contact.name + ' produt.',
+                                            subject_line: (customer['check-out'].subject ||
+                                                'Check-out of ' + customer.contact.name + ' produt.'),
                                             reply_to: customer.contact.email
                                         }
                                     }, afterDate);
@@ -240,7 +215,8 @@ export class BokunDAO {
                                             title: booking.id + '_cancellation',
                                             template_id: parseInt(customer.cancellation.templateId),
                                             from_name: customer.contact.name,
-                                            subject_line: 'Booking of ' + customer.contact.name + ' produt.',
+                                            subject_line: (customer.cancellation.subject ||
+                                                'Cancellation of ' + customer.contact.name + ' produt.'),
                                             reply_to: customer.contact.email
                                         }
                                     });

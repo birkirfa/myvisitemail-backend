@@ -55,7 +55,7 @@ app.all('/*', cors(options), (req, res, next) => {
     // }
 });
 
-schedule.scheduleJob('0 * * * *', () => {
+schedule.scheduleJob('0 0 * * *', () => {
     mailchimp.clearCampaigns().then(() => {
         bokun.checkAndDoCampaigns();
     });

@@ -59,8 +59,47 @@ export class MailchimpDao {
         return this.mailchimp.patch('/lists/' + listId, listObject);
     }
 
-    public addMemberToList (listId: string, memberObj: any) {
-        return this.mailchimp.post('/lists/' + listId + '/members', memberObj);
+    public async addMemberList (customer: any, contact: any) {
+        const listData = await this.getLists();
+        for (let i =0; i < listData.lists.length; i++) {
+            let list = listData.lists[i];
+            let regexp = new RegExp(customer.email);
+            if (regexp.test(list.name)) {
+                return list
+            }
+        };
+        let listObj = {
+            "name": customer.email + '_subscribedTo_' + contact.name,
+            "contact":{
+                "company":customer.firstName + '_' + customer.lastName,
+                "address1": contact.address,
+                "address2": "",
+                "city": "",
+                "state": "",
+                "zip": "",
+                "country": "",
+                "phone": ""
+            },
+            "permission_reminder": "Mailchimp generated",
+            "campaign_defaults": {
+                "from_name": contact.name,
+                "from_email": contact.email,
+                "subject": "",
+                "language": "en"
+            },
+            "email_type_option":true
+        }
+        let campaignList = await this.createList(listObj);
+        try {
+            await this.mailchimp.post('/lists/' + campaignList.id + '/members', {
+                "email_address": customer.email,
+                "status": "subscribed"
+            })
+        } catch(err) {
+            return Promise.reject(err);
+
+        }
+        return campaignList;
     }
 
     /**
@@ -229,6 +268,10 @@ export class MailchimpDao {
         return this.mailchimp.delete('/template-folders/' + folderId);
     }
 
+    public removeList (listId) {
+        return this.mailchimp.delete('/lists/' + listId)
+    }
+
     public createAndTestCampaign (templateData, emails) {
         return new Promise <any> ((resolve, reject) => {
             this.updateTemplate(templateData.templateId, templateData.data.template)
@@ -282,4 +325,5 @@ export class MailchimpDao {
         }
         return await Promise.all(promises);
     }
+
 }

@@ -37,5 +37,6 @@ export interface IResortCustomerTemplate {
 
 export interface ITemplateData {
     templateId: string;
+    subject: string;
     html: string;
 }
