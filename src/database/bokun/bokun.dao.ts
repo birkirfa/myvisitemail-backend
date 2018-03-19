@@ -13,6 +13,7 @@ export class BokunDAO {
     private channel;
     private customerDao: CustomerDao;
     private mailchimpDao: MailchimpDao;
+    private allowedMails: string[];
 
     constructor() {
         this.vendorList = [];
@@ -24,6 +25,10 @@ export class BokunDAO {
         this.axios.defaults.baseURL = 'https://api.bokun.io'// https://api.bokuntest.com
         this.customerDao = new CustomerDao();
         this.mailchimpDao = new MailchimpDao('');
+        this.allowedMails = [
+            'sunna@ferdavefir',
+            'birkir@ysland.is'
+        ];
     }
 
     private getCustomerByName (customers, name) {
@@ -105,9 +110,14 @@ export class BokunDAO {
         this.queryBookings(false, 0)
             .then(async bookings => {
                 const customers = await this.customerDao.getAll();
+                bookings['results'] = bookings['results'].filter(booking => {
+                    if (this.allowedMails.indexOf(booking.customer.email) >= 0) {
+                        return booking;
+                    }
+                });
                 for (let i in bookings['results']) {
                     let booking = bookings['results'][i];
-                    const campaigns = await this.mailchimpDao.getCampaignsForBooking(booking.id);
+                    const campaigns = await this.mailchimpDao.getCampaignsForBooking(booking.creationDate);
                     let customer = this.getCustomerByName(customers, booking.vendor.title);
                     if (!customer) {
                         continue;
@@ -115,12 +125,7 @@ export class BokunDAO {
                     // list name cmapaign and bookingId meaning its the same as the campaigns
                     // add this to make sure the channel booking is checked
                     // booking.channel && booking.channel.title === this.channel
-                    if (booking && booking.customer && booking.customer.email
-                        && booking.customer.email === 'birkir@ysland.is') {
-                        if (campaigns.length) {
-                            continue;
-                        }
-
+                    if (booking && booking.customer && booking.customer.email) {
                         let campaignList;
                         try {
                             campaignList = await this.mailchimpDao.addMemberList(booking.customer, customer.contact);
@@ -129,13 +134,16 @@ export class BokunDAO {
                             continue;
                         }
                         if (booking.status !== 'CANCELLED') {
+                            if (campaigns.length) {
+                                continue;
+                            }
                             let booked;
                             try {
                                 booked = await this.mailchimpDao.createCampaign({
                                     recipients: {list_id: campaignList.id},
                                     type: 'regular',
                                     settings: {
-                                        title: booking.id + '_booked',
+                                        title: booking.creationDate + '_booked',
                                         template_id: parseInt(customer.booked.templateId),
                                         from_name: customer.contact.name,
                                         subject_line: (customer.booked.subject ||
@@ -168,7 +176,7 @@ export class BokunDAO {
                                         recipients: {list_id: campaignList.id},
                                         type: 'regular',
                                         settings: {
-                                            title: booking.id + '_check-in',
+                                            title: booking.creationDate + '_check-in',
                                             template_id: parseInt(customer['check-in'].templateId),
                                             from_name: customer.contact.name,
                                             subject_line: (customer['check-in'].subject ||
@@ -189,7 +197,7 @@ export class BokunDAO {
                                         recipients: {list_id: campaignList.id},
                                         type: 'regular',
                                         settings: {
-                                            title: booking.id + '_check-out',
+                                            title: booking.creationDate + '_check-out',
                                             template_id: parseInt(customer['check-out'].templateId),
                                             from_name: customer.contact.name,
                                             subject_line: (customer['check-out'].subject ||
@@ -218,7 +226,7 @@ export class BokunDAO {
                                         recipients: {list_id: campaignList.id},
                                         type: 'regular',
                                         settings: {
-                                            title: booking.id + '_cancellation',
+                                            title: booking.creationDate + '_cancellation',
                                             template_id: parseInt(customer.cancellation.templateId),
                                             from_name: customer.contact.name,
                                             subject_line: (customer.cancellation.subject ||

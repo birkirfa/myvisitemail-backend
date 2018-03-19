@@ -10,7 +10,7 @@ import {MailchimpDao} from "./src/database/mailchimp/mailchimp.dao";
 
 const bokun = new BokunDAO();
 const mailchimp = new MailchimpDao('');
-const port = 8000;
+const port = 5000;
 const app: Express.Application = Express();
 const db: DbConfig = new DbConfig();
 const whiteList = new WhiteList();

@@ -23,7 +23,7 @@ export class MailchimpDao {
     }
 
     public getLists(): Promise<IMailLists> {
-        return this.mailchimp.get('/lists');
+        return this.mailchimp.get('/lists?count=99999999');
     }
 
     public getListById(listId: string): Promise<IMailingList> {
@@ -31,12 +31,12 @@ export class MailchimpDao {
     }
 
     public getCampaigns() {
-        return this.mailchimp.get('/campaigns');
+        return this.mailchimp.get('/campaigns?count=99999999');
     }
 
-    public async getCampaignsForBooking(bookingId) {
-        let data = await this.mailchimp.get('/campaigns');
-        let regExp = new RegExp(bookingId);
+    public async getCampaignsForBooking(bookingCreationDate) {
+        let data = await this.getCampaigns();
+        let regExp = new RegExp(bookingCreationDate);
         let campaignArray = [];
         for (let i in data['campaigns']) {
             let campaign = data['campaigns'][i];
