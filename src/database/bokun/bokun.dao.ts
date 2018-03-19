@@ -16,12 +16,12 @@ export class BokunDAO {
 
     constructor() {
         this.vendorList = [];
-        this.accessKey = '639a5e7b041c469b947a72b8e5ee2ba6';// 'a2d9749ac9cd4cb38a79760add3431d0'
-        this.secretKey = 'e7f8849d74e34f29b34c857123be7503';// 'c1938ca317c54de09b0aafb9223c4a0c'
-        this.hostname = 'api.bokuntest.com'// 'api.bokun.io';
+        this.accessKey = '5ea8219ba5fe4f7c9e7cf905f9a887f1'; // '639a5e7b041c469b947a72b8e5ee2ba6'
+        this.secretKey = 'dfd0cf6b86ab49918a9e92031d166fa5'; // 'e7f8849d74e34f29b34c857123be7503'
+        this.hostname = 'api.bokun.io'// api.bokuntest.com;
         this.channel = 'myVisitTesting'
         this.axios = axios;
-        this.axios.defaults.baseURL = 'https://api.bokuntest.com'// 'https://api.bokun.io';
+        this.axios.defaults.baseURL = 'https://api.bokun.io'// https://api.bokuntest.com
         this.customerDao = new CustomerDao();
         this.mailchimpDao = new MailchimpDao('');
     }
@@ -115,7 +115,8 @@ export class BokunDAO {
                     // list name cmapaign and bookingId meaning its the same as the campaigns
                     // add this to make sure the channel booking is checked
                     // booking.channel && booking.channel.title === this.channel
-                    if (booking && booking.customer && booking.customer.email) {
+                    if (booking && booking.customer && booking.customer.email
+                        && booking.customer.email === 'birkir@ysland.is') {
                         if (campaigns.length) {
                             continue;
                         }
@@ -147,18 +148,23 @@ export class BokunDAO {
                                 // error sending campaign continue
                             }
 
+                            const sendDate = new Date();
+                            sendDate.setMinutes(new Date().getMinutes() + 5);
+
                             try {
-                                await this.mailchimpDao.performCampaignAction(booked.id, 'send', {});
+                                await this.mailchimpDao.performCampaignAction(booked.id, 'schedule', {
+                                    schedule_time: sendDate
+                                });
                             } catch (err) {
                                 console.error(err);
                                 // error sending campaign continue
                             }
 
-                            let beforeDate = new Date(booking.startDate);
+                            const beforeDate = new Date(booking.startDate);
                             beforeDate.setDate(beforeDate.getDate() - 3);
                             if (new Date().getTime() < beforeDate.getTime()) {
                                 try {
-                                    let before = await this.mailchimpDao.createAndScheduleCampaign({
+                                    const before = await this.mailchimpDao.createAndScheduleCampaign({
                                         recipients: {list_id: campaignList.id},
                                         type: 'regular',
                                         settings: {
@@ -175,11 +181,11 @@ export class BokunDAO {
                                     // error scheduling campaign continue
                                 }
                             }
-                            let afterDate = new Date(booking.endDate);
+                            const afterDate = new Date(booking.endDate);
                             afterDate.setDate(afterDate.getDate() + 3);
                             if (new Date().getTime() < afterDate.getTime()) {
                                 try {
-                                    let after = await this.mailchimpDao.createAndScheduleCampaign({
+                                    const after = await this.mailchimpDao.createAndScheduleCampaign({
                                         recipients: {list_id: campaignList.id},
                                         type: 'regular',
                                         settings: {
@@ -225,8 +231,13 @@ export class BokunDAO {
                                     // error sending campaign continue
                                 }
 
+                                const sendDate = new Date();
+                                sendDate.setMinutes(new Date().getMinutes() + 5);
+
                                 try {
-                                    await this.mailchimpDao.performCampaignAction(cancellation.id, 'send', {});
+                                    await this.mailchimpDao.performCampaignAction(cancellation.id, 'schedule', {
+                                        schedule_time: sendDate
+                                    });
                                 } catch (err) {
                                     console.error(err);
                                     // error sending campaign continue
@@ -294,9 +305,15 @@ export class BokunDAO {
             this.prepareHttpOptions(
                 'POST', '/booking.json/product-booking-search'
             );
-            const queryObj = buildQuery ? { productIds: [accommodationId] } : {};
-            this.axios.post('/booking.json/product-booking-search', queryObj)
-                .then(res => resolve(res.data))
+            this.axios.post('/booking.json/product-booking-search', { pageSize: 1 })
+                .then(res => {
+                    const queryObj = buildQuery ?
+                        { productIds: [accommodationId], pageSize: res.data['totalHits'] } :
+                        { pageSize: res.data['totalHits'] };
+                    this.axios.post('/booking.json/product-booking-search', queryObj)
+                        .then(resp => resolve(resp.data))
+                        .catch(err => reject(err.response.data));
+                })
                 .catch(err => reject(err.response.data));
         });
     }

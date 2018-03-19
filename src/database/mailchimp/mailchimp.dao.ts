@@ -61,11 +61,11 @@ export class MailchimpDao {
 
     public async addMemberList (customer: any, contact: any) {
         const listData = await this.getLists();
-        for (let i =0; i < listData.lists.length; i++) {
-            let list = listData.lists[i];
-            let regexp = new RegExp(customer.email);
+        for (let i = 0; i < listData.lists.length; i++) {
+            const list = listData.lists[i];
+            const regexp = new RegExp(customer.email);
             if (regexp.test(list.name)) {
-                return list
+                return list;
             }
         };
         let listObj = {
