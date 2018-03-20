@@ -23,7 +23,11 @@ export class MailchimpDao {
     }
 
     public getLists(): Promise<IMailLists> {
-        return this.mailchimp.get('/lists?count=99999999');
+        return this.mailchimp.get('/lists?email=birkir@ysland.is');
+    }
+
+    public getListsByEmail(email: string): Promise<IMailLists> {
+        return this.mailchimp.get(`/lists?email=${email}`);
     }
 
     public getListById(listId: string): Promise<IMailingList> {
@@ -60,14 +64,17 @@ export class MailchimpDao {
     }
 
     public async addMemberList (customer: any, contact: any) {
-        const listData = await this.getLists();
-        for (let i = 0; i < listData.lists.length; i++) {
-            const list = listData.lists[i];
-            const regexp = new RegExp(customer.email);
-            if (regexp.test(list.name)) {
-                return list;
-            }
-        };
+        const listData = await this.getListsByEmail(customer.email);
+        if (listData.lists.length > 0) {
+            return listData.lists[0];
+        }
+        // for (let i = 0; i < listData.lists.length; i++) {
+        //     const list = listData.lists[i];
+        //     const regexp = new RegExp(customer.email);
+        //     if (regexp.test(list.name)) {
+        //         return list;
+        //     }
+        // };
         let listObj = {
             "name": customer.email + '_subscribedTo_' + contact.name,
             "contact":{

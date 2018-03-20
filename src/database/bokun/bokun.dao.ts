@@ -26,7 +26,8 @@ export class BokunDAO {
         this.customerDao = new CustomerDao();
         this.mailchimpDao = new MailchimpDao('');
         this.allowedMails = [
-            'sunna@ferdavefir',
+            'sunna@ferdavefir.is',
+            'Sunna@ferdavefir.is',
             'birkir@ysland.is'
         ];
     }
@@ -115,6 +116,7 @@ export class BokunDAO {
                         return booking;
                     }
                 });
+
                 for (let i in bookings['results']) {
                     let booking = bookings['results'][i];
                     const campaigns = await this.mailchimpDao.getCampaignsForBooking(booking.creationDate);
@@ -126,6 +128,7 @@ export class BokunDAO {
                     // add this to make sure the channel booking is checked
                     // booking.channel && booking.channel.title === this.channel
                     if (booking && booking.customer && booking.customer.email) {
+                        console.log('Creating campaigns for:', booking.customer.email);
                         let campaignList;
                         try {
                             campaignList = await this.mailchimpDao.addMemberList(booking.customer, customer.contact);
@@ -254,6 +257,8 @@ export class BokunDAO {
                         }
                     }
                 }
+
+                console.log('Created ' + bookings['results'].length + ' Campaigns');
             })
             .catch(error => {
                 console.error(error);
