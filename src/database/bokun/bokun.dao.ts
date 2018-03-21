@@ -136,6 +136,7 @@ export class BokunDAO {
                             console.error('Creating member list', err);
                             continue;
                         }
+
                         if (booking.status !== 'CANCELLED') {
                             if (campaigns.length) {
                                 continue;
@@ -216,10 +217,10 @@ export class BokunDAO {
                         } else {
                             let has = false;
                             for (let i in campaigns) {
-                                if (/cancellation/.test(campaigns[i].title)) {
+                                if (/cancellation/.test(campaigns[i].settings.title)) {
                                     has = true;
                                 } else {
-                                    await this.mailchimpDao.deleteCampaign(campaigns[i].id);
+                                    await this.mailchimpDao.deleteCampaign(campaigns[i].settings.id);
                                 }
                             }
                             if (!has) {
