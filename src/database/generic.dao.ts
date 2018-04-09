@@ -53,12 +53,11 @@ export class GenericDao {
     }
 
     public update(itemId, updateData): Promise<any> {
-        let self = this;
         return new Promise<any>((resolve, reject) => {
-            self.Model.findById(itemId)
-                .then(function (item) {
+            this.Model.findById(itemId)
+                .then((item) => {
                     for (let key in updateData) {
-                        if (!item[key]) {
+                        if (!item[key] && item[key] !== 0) {    // carefull around falsy values
                             reject('Attempted to update a non existeny property.');
                             return;
                         }
@@ -66,7 +65,10 @@ export class GenericDao {
                     item.set(updateData);
                     item.save().then(resolve).catch(reject);
                 })
-                .catch(reject);
+                .catch(err => {
+                    console.error(err);
+                    reject(err);;
+                });
         });
     }
 

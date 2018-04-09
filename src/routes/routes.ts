@@ -18,5 +18,12 @@ export class RoutesManager {
         this.app.use('/mailchimp', new MailchimpRoute().router);
         this.app.use('/resort-customer', new ResortCustomersRoute().router);
         this.app.use('/bokun', new BokunRoute().router);
+
+        // nginx deploy routes only
+        this.app.use('/mongo/file', new FilesRoute().router);
+        this.app.use('/mongo/user', new UserRoute().router);
+        this.app.use('/mongo/mailchimp', new MailchimpRoute().router);
+        this.app.use('/mongo/resort-customer', new ResortCustomersRoute().router);
+        this.app.use('/mongo/bokun', new BokunRoute().router);
     }
 }

@@ -1,30 +1,39 @@
 import {BaseModel} from '../base.model';
-import * as extend from 'extend';
 
 export class CustomerModel extends BaseModel {
 
     constructor(schemaObj) {
-        const baseCustomer = {
-            name: {
-                type: String,
-                required: true,
+        const templateData = {
+            templateId: {
+                type: String
             },
-            email: {
-                type: String,
-                required: true,
+            html: {
+                type: String
             },
-            phone: {
-                type: String,
-                required: true,
-            },
-            address: {
-                type: String,
-                required: true,
+            subject: {
+                type: String
             }
         };
         if (!schemaObj) {
             const fullModel = {
-                contact: baseCustomer,
+                contact: {
+                    name: {
+                        type: String,
+                        required: true,
+                    },
+                    email: {
+                        type: String,
+                        required: true,
+                    },
+                    phone: {
+                        type: String,
+                        required: true,
+                    },
+                    address: {
+                        type: String,
+                        required: true,
+                    }
+                },
                 area: {
                     type: String,
                     required: true,
@@ -41,6 +50,16 @@ export class CustomerModel extends BaseModel {
                 backgroundId: {
                     type: String
                 },
+                templateFolderId: {
+                    type: String
+                },
+                listId: {
+                    type: String
+                },
+                booked: templateData,
+                'check-in': templateData,
+                'check-out': templateData,
+                cancellation: templateData,
                 metadata: {
                     creationDate: {
                         type: Number,
@@ -51,7 +70,6 @@ export class CustomerModel extends BaseModel {
                     }
                 }
             };
-            fullModel.contact = extend(fullModel.contact, baseCustomer);
             super(fullModel);
         } else {
             super (schemaObj);

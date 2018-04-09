@@ -23,7 +23,11 @@ export class MailchimpDao {
     }
 
     public getLists(): Promise<IMailLists> {
-        return this.mailchimp.get('/lists');
+        return this.mailchimp.get('/lists?email=birkir@ysland.is');
+    }
+
+    public getListsByEmail(email: string): Promise<IMailLists> {
+        return this.mailchimp.get(`/lists?email=${email}`);
     }
 
     public getListById(listId: string): Promise<IMailingList> {
@@ -31,7 +35,20 @@ export class MailchimpDao {
     }
 
     public getCampaigns() {
-        return this.mailchimp.get('/campaigns');
+        return this.mailchimp.get('/campaigns?count=99999999');
+    }
+
+    public async getCampaignsForBooking(bookingCreationDate) {
+        let data = await this.getCampaigns();
+        let regExp = new RegExp(bookingCreationDate);
+        let campaignArray = [];
+        for (let i in data['campaigns']) {
+            let campaign = data['campaigns'][i];
+            if (campaign.settings && regExp.test(campaign.settings.title)) {
+                campaignArray.push(campaign);
+            }
+        }
+        return campaignArray;
     }
 
     public getAutomations() {
@@ -44,6 +61,52 @@ export class MailchimpDao {
 
     public updateList(listId: string, listObject: any) {
         return this.mailchimp.patch('/lists/' + listId, listObject);
+    }
+
+    public async addMemberList (customer: any, contact: any) {
+        const listData = await this.getListsByEmail(customer.email);
+        if (listData.lists.length > 0) {
+            return listData.lists[0];
+        }
+        // for (let i = 0; i < listData.lists.length; i++) {
+        //     const list = listData.lists[i];
+        //     const regexp = new RegExp(customer.email);
+        //     if (regexp.test(list.name)) {
+        //         return list;
+        //     }
+        // };
+        let listObj = {
+            "name": customer.email + '_subscribedTo_' + contact.name,
+            "contact":{
+                "company":customer.firstName + '_' + customer.lastName,
+                "address1": contact.address,
+                "address2": "",
+                "city": "",
+                "state": "",
+                "zip": "",
+                "country": "",
+                "phone": ""
+            },
+            "permission_reminder": "Mailchimp generated",
+            "campaign_defaults": {
+                "from_name": contact.name,
+                "from_email": contact.email,
+                "subject": "",
+                "language": "en"
+            },
+            "email_type_option":true
+        }
+        let campaignList = await this.createList(listObj);
+        try {
+            await this.mailchimp.post('/lists/' + campaignList.id + '/members', {
+                "email_address": customer.email,
+                "status": "subscribed"
+            })
+        } catch(err) {
+            return Promise.reject(err);
+
+        }
+        return campaignList;
     }
 
     /**
@@ -120,23 +183,42 @@ export class MailchimpDao {
      */
     public createAndScheduleCampaign(campaignObject: any, date: Date) {
         this.setScheduleMinutes(date);
-
-        this.createCampaign(campaignObject)
-            .then(createdCampaign => {
-                this.performCampaignAction(createdCampaign.id, 'schedule', {
-                    schedule_time: date
-                })
-                    .then(res => {
-                        console.log(res);
+        return new Promise ((resolve, reject) => {
+            this.createCampaign(campaignObject)
+                .then(createdCampaign => {
+                    this.performCampaignAction(createdCampaign.id, 'schedule', {
+                        schedule_time: date
                     })
-                    .error(err => {
-                        console.error(err);
-                    });
-            });
+                    .then(resolve)
+                    .error(reject);
+                });
+        });
+
+    }
+
+    public async clearCampaigns () {
+        const condition = new Date().getDate();
+        const campaigns = (await this.getCampaigns()).campaigns;
+        let removePromises = [];
+        if (campaigns && campaigns.length) {
+            for (let i in campaigns) {
+                let campaign = campaigns[i];
+                let check = new Date (campaign.send_time).getDate();
+                if (condition - check > 365) {
+                    removePromises.push(this.deleteCompleteCampaign(campaign));
+                }
+            }
+        }
+        return await Promise.all(removePromises);
     }
 
     public deleteCampaign(campaignId: string) {
-        return this.mailchimp.delete('/campaigns/' + campaignId);
+        return this.mailchimp.delete('/campaigns/' + campaignId)
+    }
+
+    private async deleteCompleteCampaign (campaignObj) {
+        await this.deleteCampaign(campaignObj.id)
+        return this.mailchimp.delete('/lists/' + campaignObj.recipients.list_id);
     }
 
     public getReports() {
@@ -151,37 +233,104 @@ export class MailchimpDao {
         return this.mailchimp.get('/reports/' + campaignId);
     }
 
-    public createTemplateFolder(name: string): IMailchimpTemplateFolder {
-        return this.mailchimp.post('/template-folders', { name: name });
+    public getTemplateById (templateId: string) {
+        return this.mailchimp.get('/templates/' + templateId);
     }
 
-    public getTemplate(folderId: string, templateName: string): Promise<IMailchimpTemplate> {
-        return new Promise<IMailchimpTemplate>((resolve, reject) => {
-            try {
-                resolve(null);
-            } catch (error) {
-                reject(error);
-            }
-        });
+    public getTemplateContentById (templateId: string) {
+        return this.mailchimp.get('/file-manager/files');    // /templates/' + templateId + '/default-content'
     }
 
-    public createTemplate(template: IResortCustomerTemplate) {
-        return new Promise<any>((resolve, reject) => {
-            try {
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+    public createTemplate (templateData: IResortCustomerTemplate) {
+        return this.mailchimp.post(
+            '/templates', templateData
+        );
     }
 
-    public updateTemplate(templateId: string) {
-        return new Promise<any>((resolve, reject) => {
-            try {
-                resolve();
-            } catch (error) {
-                reject(error);
-            }
-        });
+    public updateTemplate (templateId, templateData: IResortCustomerTemplate) {
+        return this.mailchimp.patch(
+            '/templates/' + templateId, templateData
+        );
     }
+
+    public removeTemplate (templateId: string) {
+        return this.mailchimp.delete('/templates/' + templateId);
+    }
+
+    public getFolders () {
+        return this.mailchimp.get('/template-folders/');
+    }
+
+    public getFolderById (id: number) {
+        return this.mailchimp.get('/template-folders/' + id);
+    }
+
+    public createFolder (folderName: string) {
+        return this.mailchimp.post(
+            '/template-folders', {name: folderName}
+        );
+    }
+
+    public removeFolder (folderId) {
+        return this.mailchimp.delete('/template-folders/' + folderId);
+    }
+
+    public removeList (listId) {
+        return this.mailchimp.delete('/lists/' + listId)
+    }
+
+    public createAndTestCampaign (templateData, emails) {
+        return new Promise <any> ((resolve, reject) => {
+            this.updateTemplate(templateData.templateId, templateData.data.template)
+                .then(() => {
+                    this.createCampaign(
+                        {
+                            type: 'regular',
+                            settings: {
+                                title: "Test campaign",
+                                template_id: Number.parseInt(templateData.templateId),
+                                from_name: 'Test sender',
+                                reply_to: 'mveDevs@gmail.com',
+                                subject_line: templateData.data.subject || 'Test campaign'
+                            }
+                        })
+                        .then(result => {
+                            this.performCampaignAction(result.id, 'test', {
+                                test_emails: emails,
+                                send_type: 'html'
+                            }).then(res => {
+                                resolve('Test email has been sent.');
+                            }).catch(err => {
+                                if (/This campaign cannot be tested:/.test(err.detail)) {
+                                    this.deleteCampaign(result.id)
+                                        .then(() => resolve(err.detail))
+                                        .catch(error => reject(error));
+                                } else {
+                                    reject(err);
+                                }
+                            });
+                        })
+                        .catch(err => reject(err));
+                })
+                .catch(err => reject(err));
+        });
+
+    }
+
+    public async clearTestCampaignsByTemplateUsed (tempId: number) {
+        let data = await this.getCampaigns();
+        let promises = [];
+        if (data.campaigns) {
+            for (let key in data.campaigns) {
+                let campaign = data.campaigns[key];
+                if (campaign.settings &&
+                    campaign.settings.template_id === tempId &&
+                    campaign.settings.title === 'Test campaign') {
+                    promises.push(this.deleteCampaign(campaign.id));
+                }
+            }
+        }
+        return await Promise.all(promises);
+    }
+
 }

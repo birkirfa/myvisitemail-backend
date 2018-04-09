@@ -103,7 +103,7 @@ export class ResortCustomersRoute {
                         res.status(200).json(response);
                     })
                     .catch(error => {
-                        res.status(500).json(error);
+                        res.status(500).json({message: 'Error saving to database'});
                     });
             } else {
                 res.status(400).send('Insufficient data.');
@@ -117,6 +117,7 @@ export class ResortCustomersRoute {
         this.router.put('/:resortId', this.jsonParser, (req, res) => {
             const id = req.params.resortId;
             const updateData = req.body;
+            delete updateData._id;
             if (Object.keys(updateData).length) {
                 if (!updateData.metadata) {
                     updateData.metadata = {};
@@ -127,21 +128,32 @@ export class ResortCustomersRoute {
                         res.status(200).json(response);
                     })
                     .catch(error => {
-                        res.status(500).json(error);
+                        console.error(error);
+                        res.status(500).json({message: 'Error saving to database'});
                     });
             } else {
                 res.status(400).send('Insufficient data.');
             }
         });
 
-        this.router.delete('/:resortId', (req, res) => {
+        this.router.delete('/:resortId', async (req, res) => {
             const resortId = req.params.resortId;
             try {
-                this.dao.remove(resortId);
+                await this.dao.removeComplete(resortId);
             } catch (error) {
-                console.error(error);
-                res.status(500).send('Error writing to DB');
-                return;
+                if (error.status === 404) {
+                    try {   // remove this after all tests pass
+                        await this.dao.remove(resortId);
+                    } catch (err) {
+                        console.error(error);
+                        res.status(500).send('Error writing to DB');
+                        return;
+                    }
+                } else {
+                    console.error(error);
+                    res.status(500).send('Error writing to DB');
+                    return;
+                }
             }
             try {
                 this.removedDao.filterList();
@@ -160,36 +172,6 @@ export class ResortCustomersRoute {
                 return;
             }
             res.status(200).send('OK!');
-        });
-
-        this.router.get('/resort-customer/detail/template', (req, res) => {
-            res.status(400).send('Insufficient data. Missing folderId and templateName.');
-        });
-
-        this.router.get('/resort-customer/detail/:folderId', (req, res) => {
-            res.status(400).send('Insufficient data. Missing templateName.');
-        });
-
-        this.router.get('/resort-customer/detail/template/:folderId/:templateName', (req, res) => {
-            const folderId = req.params.folderId;
-            const templateName = req.params.templateName;
-            try {
-
-            } catch (error) {
-                console.log(error);
-                res.status(500).send(error);
-            }
-        });
-
-        this.router.post('/resort-customer/detail/template', this.jsonParser, (req, res) => {
-            const templateData: IResortCustomerTemplate = req.body;
-            console.log('save', templateData);
-            try {
-
-            } catch (error) {
-                console.log(error);
-                res.status(500).send(error);
-            }
         });
     }
 }
