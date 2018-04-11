@@ -1,12 +1,47 @@
 import * as crypto from 'crypto';
 import * as dateFormat from 'dateformat';
-import * as axios from 'axios';
+import axios, {AxiosPromise, AxiosRequestConfig} from 'axios';
 import { CustomerDao } from "../resort-customers/resort-customer.dao";
 import { MailchimpDao } from "../mailchimp/mailchimp.dao";
 
-export class BokunDAO {
+const BOKUN_DEFAULT_ACCESS_KEY = '5ea8219ba5fe4f7c9e7cf905f9a887f1'; // '639a5e7b041c469b947a72b8e5ee2ba6'
+const BOKUN_DEFAULT_SECRET_KEY = 'dfd0cf6b86ab49918a9e92031d166fa5'; // 'e7f8849d74e34f29b34c857123be7503'
+const RESOURCE_NOT_FOUND_STATUS = 404;
+const BAD_REQUEST_STATUS = 400;
+
+export interface IAccessHeaderCreator {
+    create(method: string, path: string): any;
+}
+
+export class BokunAccessHeaderCreator implements IAccessHeaderCreator {
     private accessKey: string;
     private secretKey: string;
+
+    constructor(accessKey: string = BOKUN_DEFAULT_ACCESS_KEY, secretKey: string = BOKUN_DEFAULT_SECRET_KEY) {
+        this.accessKey = accessKey;
+        this.secretKey = secretKey;
+    }
+
+    private encodeSignature(date: string, method: string, path: string): string {
+        return crypto.createHmac('sha1', this.secretKey)
+            .update(
+                date + this.accessKey + method + path
+            ).digest('base64');
+    }
+
+    public create(method: string, path: string): any {
+        const date = dateFormat(new Date(), 'yyyy-mm-dd HH:mm:ss');
+        const headers = {
+            'X-Bokun-Date': date,
+            'X-Bokun-AccessKey': this.accessKey,
+            'X-Bokun-Signature': this.encodeSignature(date, method, path)
+        };
+
+        return headers;
+    }
+}
+
+export class BokunDAO {
     private hostname: string;
     private vendorList: any[];
     private axios;
@@ -17,8 +52,6 @@ export class BokunDAO {
 
     constructor() {
         this.vendorList = [];
-        this.accessKey = '5ea8219ba5fe4f7c9e7cf905f9a887f1'; // '639a5e7b041c469b947a72b8e5ee2ba6'
-        this.secretKey = 'dfd0cf6b86ab49918a9e92031d166fa5'; // 'e7f8849d74e34f29b34c857123be7503'
         this.hostname = 'api.bokun.io'// api.bokuntest.com;
         this.channel = 'myVisitTesting'
         this.axios = axios;
@@ -38,20 +71,6 @@ export class BokunDAO {
                 return customers[i];
             }
         }
-    }
-
-    private encodeSignature(date, method, path) {
-        return crypto.createHmac('sha1', this.secretKey)
-            .update(
-            date + this.accessKey + method + path
-            ).digest('base64');
-    }
-
-    private prepareHttpOptions(method, path) {
-        const date = dateFormat(new Date(), 'yyyy-mm-dd HH:mm:ss');
-        this.axios.defaults.headers.common['X-Bokun-Date'] = date;
-        this.axios.defaults.headers.common['X-Bokun-AccessKey'] = this.accessKey;
-        this.axios.defaults.headers.common['X-Bokun-Signature'] = this.encodeSignature(date, method, path);
     }
 
     private ProcessItemsResponse(response, data, extrapolateItems) {
@@ -107,228 +126,297 @@ export class BokunDAO {
         }
     }
 
-    public checkAndDoCampaigns () {
-        this.queryBookings(false, 0)
-            .then(async bookings => {
-                const customers = await this.customerDao.getAll();
-                bookings['results'] = bookings['results'].filter(booking => {
-                    if (this.allowedMails.indexOf(booking.customer.email) >= 0) {
-                        return booking;
-                    }
-                });
+    public async prepareDataForCampaigns () {
+        try {
+            // Creating list of customers with their corresponding booking list
+            const customersToBookingsZip = [];
+            const customers = await this.customerDao.getAll();
 
-                for (let i in bookings['results']) {
-                    let booking = bookings['results'][i];
-                    const campaigns = await this.mailchimpDao.getCampaignsForBooking(booking.creationDate);
-                    let customer = this.getCustomerByName(customers, booking.vendor.title);
-                    if (!customer) {
+            for (const customer of customers) {
+                const accessKey = customer.APIAccess && customer.APIAccess.bokun.accessKey;
+                const secretKey = customer.APIAccess && customer.APIAccess.bokun.secretKey;
+
+                if(!accessKey || !secretKey) {
+                    console.log(`Access keys for customer ${customer.contact.name} are missing`);
+                    continue;
+                }
+
+                const accessHeaderCreator = new BokunAccessHeaderCreator(accessKey, secretKey);
+                const bookings = (await this.queryBookings(false, 0, accessHeaderCreator))
+                    .results.filter((booking) =>
+                        this.allowedMails.indexOf(booking.customer.email) !== -1
+                    );
+
+                if (bookings.length !== 0) {
+                    customersToBookingsZip.push({
+                        customer,
+                        bookings
+                    });
+                }
+            }
+
+            return customersToBookingsZip;
+        } catch(err) {
+            throw new Error(`Preparing data for campaigns has failed: ${err.toString()}`);
+        }
+    }
+
+    public async createCampagins() {
+        const customersToBookingsZip = await this.prepareDataForCampaigns();
+
+        for(const { customer, bookings } of customersToBookingsZip) {
+            for(const booking of bookings) {
+                console.log(`Creating campaigns for: ${booking.customer.email}`);
+
+                let campaignList;
+                try {
+                    campaignList = await this.mailchimpDao.addMemberList(booking.customer, customer.contact);
+                } catch (err) {
+                    throw new Error(`Creating member list has failed: ${err.toString()}`);
+                }
+
+                let campaigns;
+                try {
+                    campaigns = await this.mailchimpDao.getCampaignsForBooking(booking.creationDate);
+                } catch(err) {
+                    throw new Error(`Getting campaigns has failed: ${err.toString()}`);
+                }
+
+                if (booking.status !== 'CANCELLED') {
+                    if (campaigns.length) {
                         continue;
                     }
-                    // list name cmapaign and bookingId meaning its the same as the campaigns
-                    // add this to make sure the channel booking is checked
-                    // booking.channel && booking.channel.title === this.channel
-                    if (booking && booking.customer && booking.customer.email) {
-                        console.log('Creating campaigns for:', booking.customer.email);
-                        let campaignList;
+
+                    let booked;
+                    try {
+                        booked = await this.mailchimpDao.createCampaign({
+                            recipients: {list_id: campaignList.id},
+                            type: 'regular',
+                            settings: {
+                                title: booking.creationDate + '_booked',
+                                template_id: parseInt(customer.booked.templateId),
+                                from_name: customer.contact.name,
+                                subject_line: (customer.booked.subject ||
+                                    'Booking of ' + customer.contact.name + ' produt.'),
+                                reply_to: customer.contact.email
+                            }
+                        });
+                    } catch (err) {
+                        throw new Error(`Creating campaign has failed: ${err.toString()}`);
+                    }
+
+                    const sendDate = new Date();
+                    sendDate.setMinutes(new Date().getMinutes() + 5);
+
+                    try {
+                        await this.mailchimpDao.performCampaignAction(booked.id, 'schedule', {
+                            schedule_time: sendDate
+                        });
+                    } catch (err) {
+                        if(err.status !== BAD_REQUEST_STATUS) {
+                            throw new Error(`Performing campaign has failed: ${err.toString()}`);
+                        }
+                    }
+
+                    const beforeDate = new Date(booking.startDate);
+                    beforeDate.setDate(beforeDate.getDate() - 3);
+                    if (new Date().getTime() < beforeDate.getTime()) {
                         try {
-                            campaignList = await this.mailchimpDao.addMemberList(booking.customer, customer.contact);
+                            await this.mailchimpDao.createAndScheduleCampaign({
+                                recipients: {list_id: campaignList.id},
+                                type: 'regular',
+                                settings: {
+                                    title: booking.creationDate + '_check-in',
+                                    template_id: parseInt(customer['check-in'].templateId),
+                                    from_name: customer.contact.name,
+                                    subject_line: (customer['check-in'].subject ||
+                                        'Check-in of ' + customer.contact.name + ' produt.'),
+                                    reply_to: customer.contact.email
+                                }
+                            }, beforeDate);
                         } catch (err) {
-                            console.error('Creating member list', err);
-                            continue;
+                            throw new Error(`Creating and scheduling campaign has failed: ${err.toString()}`);
+                        }
+                    }
+                    const afterDate = new Date(booking.endDate);
+                    afterDate.setDate(afterDate.getDate() + 3);
+                    if (new Date().getTime() < afterDate.getTime()) {
+                        try {
+                            await this.mailchimpDao.createAndScheduleCampaign({
+                                recipients: {list_id: campaignList.id},
+                                type: 'regular',
+                                settings: {
+                                    title: booking.creationDate + '_check-out',
+                                    template_id: parseInt(customer['check-out'].templateId),
+                                    from_name: customer.contact.name,
+                                    subject_line: (customer['check-out'].subject ||
+                                        'Check-out of ' + customer.contact.name + ' produt.'),
+                                    reply_to: customer.contact.email
+                                }
+                            }, afterDate);
+                        } catch (err) {
+                            throw new Error(`Creating and scheduling campaign has failed: ${err.toString()}`);
+                        }
+                    }
+                } else {
+                    let has = false;
+                    for (let i in campaigns) {
+                        if (/cancellation/.test(campaigns[i].settings.title)) {
+                            has = true;
+                        } else {
+                            try {
+                                await this.mailchimpDao.deleteCampaign(campaigns[i].settings.id);
+                            } catch(err) {
+                                // If campaign is already deleted just continue, throw an error otherwise
+                                if(err.status !== RESOURCE_NOT_FOUND_STATUS) {
+                                    throw new Error(`Deleting campaign has failed: ${err.toString()}`);
+                                }
+                            }
+                        }
+                    }
+
+                    if (!has) {
+                        let cancellation;
+                        try {
+                            cancellation = await this.mailchimpDao.createCampaign({
+                                recipients: {list_id: campaignList.id},
+                                type: 'regular',
+                                settings: {
+                                    title: booking.creationDate + '_cancellation',
+                                    template_id: parseInt(customer.cancellation.templateId),
+                                    from_name: customer.contact.name,
+                                    subject_line: (customer.cancellation.subject ||
+                                        'Cancellation of ' + customer.contact.name + ' produt.'),
+                                    reply_to: customer.contact.email
+                                }
+                            });
+                        } catch (err) {
+                            throw new Error(`Creating campaign has failed: ${err.toString()}`);
                         }
 
-                        if (booking.status !== 'CANCELLED') {
-                            if (campaigns.length) {
-                                continue;
-                            }
-                            let booked;
-                            try {
-                                booked = await this.mailchimpDao.createCampaign({
-                                    recipients: {list_id: campaignList.id},
-                                    type: 'regular',
-                                    settings: {
-                                        title: booking.creationDate + '_booked',
-                                        template_id: parseInt(customer.booked.templateId),
-                                        from_name: customer.contact.name,
-                                        subject_line: (customer.booked.subject ||
-                                            'Booking of ' + customer.contact.name + ' produt.'),
-                                        reply_to: customer.contact.email
-                                    }
-                                });
-                            } catch (err) {
-                                console.error(err);
-                                // error sending campaign continue
-                            }
+                        const sendDate = new Date();
+                        sendDate.setMinutes(new Date().getMinutes() + 5);
 
-                            const sendDate = new Date();
-                            sendDate.setMinutes(new Date().getMinutes() + 5);
-
-                            try {
-                                await this.mailchimpDao.performCampaignAction(booked.id, 'schedule', {
-                                    schedule_time: sendDate
-                                });
-                            } catch (err) {
-                                console.error(err);
-                                // error sending campaign continue
-                            }
-
-                            const beforeDate = new Date(booking.startDate);
-                            beforeDate.setDate(beforeDate.getDate() - 3);
-                            if (new Date().getTime() < beforeDate.getTime()) {
-                                try {
-                                    const before = await this.mailchimpDao.createAndScheduleCampaign({
-                                        recipients: {list_id: campaignList.id},
-                                        type: 'regular',
-                                        settings: {
-                                            title: booking.creationDate + '_check-in',
-                                            template_id: parseInt(customer['check-in'].templateId),
-                                            from_name: customer.contact.name,
-                                            subject_line: (customer['check-in'].subject ||
-                                                'Check-in of ' + customer.contact.name + ' produt.'),
-                                            reply_to: customer.contact.email
-                                        }
-                                    }, beforeDate);
-                                } catch (err) {
-                                    console.error(err);
-                                    // error scheduling campaign continue
-                                }
-                            }
-                            const afterDate = new Date(booking.endDate);
-                            afterDate.setDate(afterDate.getDate() + 3);
-                            if (new Date().getTime() < afterDate.getTime()) {
-                                try {
-                                    const after = await this.mailchimpDao.createAndScheduleCampaign({
-                                        recipients: {list_id: campaignList.id},
-                                        type: 'regular',
-                                        settings: {
-                                            title: booking.creationDate + '_check-out',
-                                            template_id: parseInt(customer['check-out'].templateId),
-                                            from_name: customer.contact.name,
-                                            subject_line: (customer['check-out'].subject ||
-                                                'Check-out of ' + customer.contact.name + ' produt.'),
-                                            reply_to: customer.contact.email
-                                        }
-                                    }, afterDate);
-                                } catch (err) {
-                                    console.error(err);
-                                    // error scheduling campaign continue
-                                }
-                            }
-                        } else {
-                            let has = false;
-                            for (let i in campaigns) {
-                                if (/cancellation/.test(campaigns[i].settings.title)) {
-                                    has = true;
-                                } else {
-                                    await this.mailchimpDao.deleteCampaign(campaigns[i].settings.id);
-                                }
-                            }
-                            if (!has) {
-                                let cancellation;
-                                try {
-                                    cancellation = await this.mailchimpDao.createCampaign({
-                                        recipients: {list_id: campaignList.id},
-                                        type: 'regular',
-                                        settings: {
-                                            title: booking.creationDate + '_cancellation',
-                                            template_id: parseInt(customer.cancellation.templateId),
-                                            from_name: customer.contact.name,
-                                            subject_line: (customer.cancellation.subject ||
-                                                'Cancellation of ' + customer.contact.name + ' produt.'),
-                                            reply_to: customer.contact.email
-                                        }
-                                    });
-                                } catch (err) {
-                                    console.error(err);
-                                    // error sending campaign continue
-                                }
-
-                                const sendDate = new Date();
-                                sendDate.setMinutes(new Date().getMinutes() + 5);
-
-                                try {
-                                    await this.mailchimpDao.performCampaignAction(cancellation.id, 'schedule', {
-                                        schedule_time: sendDate
-                                    });
-                                } catch (err) {
-                                    console.error(err);
-                                    // error sending campaign continue
-                                }
+                        try {
+                            await this.mailchimpDao.performCampaignAction(cancellation.id, 'schedule', {
+                                schedule_time: sendDate
+                            });
+                        } catch (err) {
+                            if(err.status !== BAD_REQUEST_STATUS) {
+                                throw new Error(`Performing campaign has failed: ${err.toString()}`);
                             }
                         }
                     }
                 }
-
-                console.log('Created ' + bookings['results'].length + ' Campaigns');
-            })
-            .catch(error => {
-                console.error(error);
-            });
+            }
+        }
     }
 
     /**
      * think about some clever data handlers
      * @returns {Promise<any>}
      */
-    getProductList() {
+    getProductList(accessHeaderCreator: IAccessHeaderCreator = new BokunAccessHeaderCreator()): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.prepareHttpOptions(
-                'GET', '/product-list.json/list'
-            );
-            this.axios.get('/product-list.json/list')
+            const axiosHttpOptions: AxiosRequestConfig = {
+                method: 'GET',
+                url: '/product-list.json/list'
+            };
+            axiosHttpOptions.headers = {
+                ...(axiosHttpOptions.headers || {}),
+                ...accessHeaderCreator.create(axiosHttpOptions.method, axiosHttpOptions.url)
+            };
+
+            axios(axiosHttpOptions)
                 .then(res => resolve(res.data))
                 .catch(err => reject(err));
         });
     }
 
-    getProductsFromListBySlug(listSlug: string) {
+    getProductsFromListBySlug(listSlug: string,
+                              accessHeaderCreator: IAccessHeaderCreator = new BokunAccessHeaderCreator()): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.prepareHttpOptions(
-                'GET', '/product-list.json/slug/' + listSlug
-            );
-            this.axios.get('/product-list.json/slug/' + listSlug)
+            const axiosHttpOptions: AxiosRequestConfig = {
+                method: 'GET',
+                url: `/product-list.json/slug/${listSlug}`
+            };
+            axiosHttpOptions.headers = {
+                ...(axiosHttpOptions.headers || {}),
+                ...accessHeaderCreator.create(axiosHttpOptions.method, axiosHttpOptions.url)
+            };
+
+            axios(axiosHttpOptions)
                 .then(res => resolve(res.data))
                 .catch(err => reject(err));
         });
     }
 
-    getProductsFromListById(listId: number) {
+    getProductsFromListById(listId: number,
+                            accessHeaderCreator: IAccessHeaderCreator = new BokunAccessHeaderCreator()): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.prepareHttpOptions(
-                'GET', '/product-list.json/' + listId
-            );
-            this.axios.get('/product-list.json/' + listId)
+            const axiosHttpOptions: AxiosRequestConfig = {
+                method: 'GET',
+                url: `/product-list.json/${listId}`
+            };
+            axiosHttpOptions.headers = {
+                ...(axiosHttpOptions.headers || {}),
+                ...accessHeaderCreator.create(axiosHttpOptions.method, axiosHttpOptions.url)
+            };
+
+            axios(axiosHttpOptions)
                 .then(res => resolve(res.data))
                 .catch(err => reject(err));
         });
     }
 
-    getAccomodationById(accommodationId) {
+    getAccomodationById(accommodationId: string,
+                        accessHeaderCreator: IAccessHeaderCreator = new BokunAccessHeaderCreator()): Promise<any> {
         return new Promise((resolve, reject) => {
-            const options = this.prepareHttpOptions(
-                'GET', '/accommodation.json/' + accommodationId + '?lang=EN'
-            );
-            this.axios.get('/accommodation.json/' + accommodationId + '?lang=EN')
-                .then(res => resolve(JSON.parse(res)))
+            const axiosHttpOptions: AxiosRequestConfig = {
+                method: 'GET',
+                url: `/accommodation.json/${accommodationId}`,
+                params: {
+                    lang: 'EN'
+                }
+            };
+            axiosHttpOptions.headers = {
+                ...(axiosHttpOptions.headers || {}),
+                ...accessHeaderCreator.create(axiosHttpOptions.method, axiosHttpOptions.url)
+            };
+
+            axios(axiosHttpOptions)
+                .then(res => resolve(res))
                 .catch(err => reject(err));
         });
     }
 
-    queryBookings(buildQuery: boolean, accommodationId: number) {
+    queryBookings(buildQuery: boolean,
+                  accommodationId: number,
+                  accessHeaderCreator: IAccessHeaderCreator = new BokunAccessHeaderCreator()): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.prepareHttpOptions(
-                'POST', '/booking.json/product-booking-search'
-            );
-            this.axios.post('/booking.json/product-booking-search', { pageSize: 1 })
+            const axiosHttpOptions: AxiosRequestConfig = {
+                method: 'POST',
+                url: '/booking.json/product-booking-search',
+                data: {
+                    pageSize: 1
+                }
+            };
+            axiosHttpOptions.headers = {
+                ...(axiosHttpOptions.headers || {}),
+                ...accessHeaderCreator.create(axiosHttpOptions.method, axiosHttpOptions.url)
+            };
+
+            axios(axiosHttpOptions)
                 .then(res => {
-                    const queryObj = buildQuery ?
-                        { productIds: [accommodationId], pageSize: res.data['totalHits'] } :
-                        { pageSize: res.data['totalHits'] };
-                    this.axios.post('/booking.json/product-booking-search', queryObj)
+                    axiosHttpOptions.data = buildQuery ?
+                        { productIds: [accommodationId], pageSize: res.data.totalHits } :
+                        { pageSize: res.data.totalHits };
+
+                    axios(axiosHttpOptions)
                         .then(resp => resolve(resp.data))
                         .catch(err => reject(err.response.data));
                 })
-                .catch(err => reject(err.response.data));
+                .catch(err => reject(err));
         });
     }
 
