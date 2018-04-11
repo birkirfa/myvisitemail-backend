@@ -60,6 +60,18 @@ export class CustomerModel extends BaseModel {
                 'check-in': templateData,
                 'check-out': templateData,
                 cancellation: templateData,
+                APIAccess: {
+                    bokun: {
+                        accessKey: {
+                            type: String,
+                            required: true
+                        },
+                        secretKey: {
+                            type: String,
+                            required: true
+                        }
+                    }
+                },
                 metadata: {
                     creationDate: {
                         type: Number,

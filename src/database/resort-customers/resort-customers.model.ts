@@ -9,12 +9,22 @@ export interface IResortCustomer {
     reports: any[];
     backgroundId: string;
     metadata: IMetadata;
+    APIAccess: IAPIAccess;
     templateFolderId: string;
     booked: ITemplateData;
     'check-in': ITemplateData;
     'check-out': ITemplateData;
     cancellation: ITemplateData;
     listId: string;
+}
+
+export interface IAPIAccess {
+    bokun: IBokunAPIAccess
+}
+
+export interface IBokunAPIAccess {
+    accessKey: string;
+    secretKey: string;
 }
 
 export interface ICustomerContact {
