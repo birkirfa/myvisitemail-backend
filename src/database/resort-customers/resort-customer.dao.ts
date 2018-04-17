@@ -109,7 +109,7 @@ export class CustomerDao extends GenericDao {
 
         if (updateData['check-in']) {
             updateTemplate.html = updateData['check-in'].html;
-            templateId = updateData.booked.templateId;
+            templateId = updateData['check-in'].templateId;
         } else {
             updateTemplate.html = 'New template';
             templateId = false;
@@ -124,7 +124,7 @@ export class CustomerDao extends GenericDao {
 
         if (updateData['check-out']) {
             updateTemplate.html = updateData['check-out'].html;
-            templateId = updateData.booked.templateId;
+            templateId = updateData['check-out'].templateId;
         } else {
             updateTemplate.html = 'New template';
             templateId = false;
@@ -175,6 +175,8 @@ export class CustomerDao extends GenericDao {
         //         "email_type_option":true
         //     });
         // }
+
+        await Promise.all(templatePromises);
         return await super.update(itemId, updateData);
     }
 
