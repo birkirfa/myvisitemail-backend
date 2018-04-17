@@ -58,11 +58,11 @@ export class BokunDAO {
         this.axios.defaults.baseURL = 'https://api.bokun.io'// https://api.bokuntest.com
         this.customerDao = new CustomerDao();
         this.mailchimpDao = new MailchimpDao('');
-        this.allowedMails = [
-            'sunna@ferdavefir.is',
-            'Sunna@ferdavefir.is',
-            'birkir@ysland.is'
-        ];
+        // this.allowedMails = [
+        //     'sunna@ferdavefir.is',
+        //     'Sunna@ferdavefir.is',
+        //     'birkir@ysland.is'
+        // ];
     }
 
     private getCustomerByName (customers, name) {
@@ -142,10 +142,10 @@ export class BokunDAO {
                 }
 
                 const accessHeaderCreator = new BokunAccessHeaderCreator(accessKey, secretKey);
-                const bookings = (await this.queryBookings(false, 0, accessHeaderCreator))
-                    .results.filter((booking) =>
-                        this.allowedMails.indexOf(booking.customer.email) !== -1
-                    );
+                const bookings = (await this.queryBookings(false, 0, accessHeaderCreator));
+                    // .results.filter((booking) =>
+                    //     this.allowedMails.indexOf(booking.customer.email) !== -1
+                    // );
 
                 if (bookings.length !== 0) {
                     customersToBookingsZip.push({
