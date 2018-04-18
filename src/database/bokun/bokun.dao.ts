@@ -149,6 +149,7 @@ export class BokunDAO {
                 } catch (err) {
                     // a catch that guards against errors for clients with wrong apiKeys
                     // This corresponds to human error while adding and test clients
+                    continue;
                 }
                     // .filter((booking) =>
                     //     this.allowedMails.indexOf(booking.customer.email) !== -1
