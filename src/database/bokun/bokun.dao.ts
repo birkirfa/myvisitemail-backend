@@ -142,12 +142,19 @@ export class BokunDAO {
                 }
 
                 const accessHeaderCreator = new BokunAccessHeaderCreator(accessKey, secretKey);
-                const bookings = (await this.queryBookings(false, 0, accessHeaderCreator));
-                    // .results.filter((booking) =>
+
+                let bookings;
+                try {
+                    bookings = (await this.queryBookings(false, 0, accessHeaderCreator)).results;
+                } catch (err) {
+                    // a catch that guards against errors for clients with wrong apiKeys
+                    // This corresponds to human error while adding and test clients
+                }
+                    // .filter((booking) =>
                     //     this.allowedMails.indexOf(booking.customer.email) !== -1
                     // );
 
-                if (bookings.length !== 0) {
+                if (bookings && bookings.length) {
                     customersToBookingsZip.push({
                         customer,
                         bookings
