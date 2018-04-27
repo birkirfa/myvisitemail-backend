@@ -32,26 +32,26 @@ export class MailchimpDao {
     }
 
     public getListById(listId: string): Promise<IMailingList> {
-        return this.mailchimp.get('/lists/' + listId);
+        return this.mailchimp.get(`/lists/${listId}`);
     }
 
-    public async getTotalCampaignCount () {
+    public async getTotalCampaignCount (): Promise<any> {
         let total = await this.mailchimp.get('/campaigns');
         return total['total_items'];
     }
 
-    public async getCampaigns() {
+    public async getCampaigns (): Promise<any> {
         const total = await this.getTotalCampaignCount();
         return this.mailchimp.get(`/campaigns?count=${total}`);
     }
 
-    public async queryCampaignsByDate (date) {
+    public async queryCampaignsByDate (date): Promise<any> {
         const time = moment.tz(date, 'Atlantic/Reykjavik').toISOString();
         const total = await this.getTotalCampaignCount();
         return this.mailchimp.get(`/campaigns?count=${total}&since_send_time=${time}`);
     }
 
-    public async getCampaignsForBooking(bookingCreationDate) {
+    public async getCampaignsForBooking(bookingCreationDate): Promise<any[]> {
         const fromDate = new Date();
         fromDate.setHours(new Date().getHours() - 1);
         let data = await this.queryCampaignsByDate(fromDate);
@@ -66,19 +66,19 @@ export class MailchimpDao {
         return campaignArray;
     }
 
-    public getAutomations() {
+    public getAutomations (): Promise<any> {
         return this.mailchimp.get('/automations');
     }
 
-    public createList(listObject: any) {
+    public createList (listObject: any): Promise<any> {
         return this.mailchimp.post('/lists', listObject);
     }
 
-    public updateList(listId: string, listObject: any) {
-        return this.mailchimp.patch('/lists/' + listId, listObject);
+    public updateList (listId: string, listObject: any): Promise<any> {
+        return this.mailchimp.patch(`/lists/${listId}`, listObject);
     }
 
-    public async addMemberList (customer: any, contact: any) {
+    public async addMemberList (customer: any, contact: any): Promise<any> {
         const listData = await this.getListsByEmail(customer.email);
         if (listData.lists.length > 0) {
             return listData.lists[0];
@@ -108,7 +108,7 @@ export class MailchimpDao {
 
         let campaignList = await this.createList(listObj);
         try {
-            await this.mailchimp.post('/lists/' + campaignList.id + '/members', {
+            await this.mailchimp.post(`/lists/${campaignList.id}/members`, {
                 'email_address': customer.email,
                 'status': 'subscribed'
             });
@@ -136,12 +136,12 @@ export class MailchimpDao {
         }
     }
      */
-    public createCampaign(campaign: any) {
+    public createCampaign(campaign: any): Promise<any> {
         return this.mailchimp.post('/campaigns', campaign);
     }
 
-    public updateCampaign(campaignUpdate: any, campaignId: string) {
-        return this.mailchimp.patch('/campaigns/' + campaignId, campaignUpdate);
+    public updateCampaign(campaignUpdate: any, campaignId: string): Promise<any> {
+        return this.mailchimp.patch(`/campaigns/${campaignId}`, campaignUpdate);
     }
 
     /**
@@ -156,7 +156,7 @@ export class MailchimpDao {
      *                      + test
      *                      + unschedule
      */
-    public performCampaignAction(campaignId: string, action: string, options: object) {
+    public performCampaignAction(campaignId: string, action: string, options: object): Promise<any> {
         let scheduleDate;
         if (action === 'schedule') {
             try {
@@ -191,7 +191,7 @@ export class MailchimpDao {
      * @param {Object} campaignObject
      * @param {Date} date
      */
-    public createAndScheduleCampaign(campaignObject: any, date: Date) {
+    public createAndScheduleCampaign(campaignObject: any, date: Date): Promise<any> {
         this.setScheduleMinutes(date);
         return new Promise ((resolve, reject) => {
             this.createCampaign(campaignObject)
@@ -206,7 +206,7 @@ export class MailchimpDao {
 
     }
 
-    public async clearCampaigns () {
+    public async clearCampaigns (): Promise<any> {
         const condition = new Date().getDate();
         const campaigns = (await this.getCampaigns()).campaigns;
         let removePromises = [];
@@ -222,74 +222,70 @@ export class MailchimpDao {
         return await Promise.all(removePromises);
     }
 
-    public deleteCampaign(campaignId: string) {
-        return this.mailchimp.delete('/campaigns/' + campaignId);
+    public deleteCampaign(campaignId: string): Promise<any> {
+        return this.mailchimp.delete(`/campaigns/${campaignId}`);
     }
 
-    private async deleteCompleteCampaign (campaignObj) {
+    private async deleteCompleteCampaign (campaignObj): Promise<any> {
         await this.deleteCampaign(campaignObj.id);
-        return this.mailchimp.delete('/lists/' + campaignObj.recipients.list_id);
+        return this.mailchimp.delete(`/lists/${campaignObj.recipients.list_id}`);
     }
 
-    public getReports() {
+    public getReports(): Promise<any> {
         return this.mailchimp.get('/reports');
     }
 
-    public getReportsFor(campaignId: string) {
+    public getReportsFor(campaignId: string): Promise<any> {
         return this.mailchimp.get(`/reports/${campaignId}`);
     }
 
-    public getReportsByCampaignId(campaignId: string) {
-        return this.mailchimp.get('/reports/' + campaignId);
+    public getTemplateById (templateId: string): Promise<any> {
+        return this.mailchimp.get(`/templates/${templateId}`);
     }
 
-    public getTemplateById (templateId: string) {
-        return this.mailchimp.get('/templates/' + templateId);
-    }
-
-    public getTemplateContentById (templateId: string) {
+    public getTemplateContentById (templateId: string): Promise<any> {
         return this.mailchimp.get('/file-manager/files');    // /templates/' + templateId + '/default-content'
     }
 
-    public createTemplate (templateData: IResortCustomerTemplate) {
+    public createTemplate (templateData: IResortCustomerTemplate): Promise<any> {
         return this.mailchimp.post(
             '/templates', templateData
         );
     }
 
-    public updateTemplate (templateId, templateData: IResortCustomerTemplate) {
+    public updateTemplate (templateId, templateData: IResortCustomerTemplate): Promise<any> {
         return this.mailchimp.patch(
-            '/templates/' + templateId, templateData
+            `/templates/${templateId}`, templateData
         );
     }
 
-    public removeTemplate (templateId: string) {
-        return this.mailchimp.delete('/templates/' + templateId);
+    public removeTemplate (templateId: string): Promise<any> {
+        return this.mailchimp.delete(`/templates/${templateId}`);
     }
 
-    public getFolders () {
+    public getFolders (): Promise<any> {
         return this.mailchimp.get('/template-folders/');
     }
 
-    public getFolderById (id: number) {
-        return this.mailchimp.get('/template-folders/' + id);
+    public getFolderById (id: number): Promise<any> {
+        return this.mailchimp.get(`/template-folders/${id}`);
     }
 
-    public createFolder (folderName: string) {
+    public createFolder (folderName: string): Promise<any> {
         return this.mailchimp.post(
             '/template-folders', {name: folderName}
         );
     }
 
-    public removeFolder (folderId) {
-        return this.mailchimp.delete('/template-folders/' + folderId);
+    public removeFolder (folderId): Promise<any> {
+        return this.mailchimp.delete(`/template-folders/${folderId}`);
     }
 
-    public removeList (listId) {
-        return this.mailchimp.delete('/lists/' + listId);
+    public removeList (listId): Promise<any> {
+        return this.mailchimp.delete(`/lists/${listId}`);
     }
 
-    public createAndTestCampaign (templateData, emails) {
+    public createAndTestCampaign (templateData, emails): Promise<any> {
         return new Promise <any> ((resolve, reject) => {
             this.updateTemplate(templateData.templateId, templateData.data.template)
                 .then(() => {
@@ -327,7 +323,7 @@ export class MailchimpDao {
 
     }
 
-    public async clearTestCampaignsByTemplateUsed (tempId: number) {
+    public async clearTestCampaignsByTemplateUsed (tempId: number): Promise<any> {
         let data = await this.getCampaigns();
         let promises = [];
         if (data.campaigns) {

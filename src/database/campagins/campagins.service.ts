@@ -51,7 +51,7 @@ export class CampaginsService {
 
                     if (customer.booked.toUse) {
                         const sendDate = new Date();
-                        sendDate.setMinutes(new Date().getMinutes() + 5);
+                        sendDate.setMinutes(new Date().getMinutes() + 5);   // set schedule date to 5 minutes from now
 
                         try {
                             await performCampaignAction({
@@ -71,7 +71,7 @@ export class CampaginsService {
 
                     if (customer['check-in'].toUse) {
                         const beforeDate = new Date(booking.startDate);
-                        beforeDate.setDate(beforeDate.getDate() - 3);
+                        beforeDate.setDate(beforeDate.getDate() - 3);    // set schedule date to 3 days before check-in
                         if (new Date().getTime() < beforeDate.getTime()) {
                             try {
                                 await performCampaignAction({
@@ -90,7 +90,7 @@ export class CampaginsService {
 
                     if (customer['check-out'].toUse) {
                         const afterDate = new Date(booking.endDate);
-                        afterDate.setDate(afterDate.getDate() + 3);
+                        afterDate.setDate(afterDate.getDate() + 3);        // set schedule date to 3 days after check-out
 
                         if (new Date().getTime() < afterDate.getTime()) {
                             try {
@@ -126,7 +126,7 @@ export class CampaginsService {
 
                     if (!has && customer.cancellation.toUse) {
                         const sendDate = new Date();
-                        sendDate.setMinutes(new Date().getMinutes() + 5);
+                        sendDate.setMinutes(new Date().getMinutes() + 5);    // set schedule date to 5 minutes from now
                         try {
                             await performCampaignAction({
                                 title: booking.creationDate + '_cancellation',
