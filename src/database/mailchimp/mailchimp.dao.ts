@@ -1,6 +1,7 @@
 import * as Mailchimp from 'mailchimp-api-v3';
 import { IMailLists, IMailingList, IMailchimpTemplateFolder, IMailchimpTemplate } from './mailchimp.model';
 import { IResortCustomerTemplate } from '../resort-customers/resort-customers.model';
+import * as moment from 'moment-timezone';
 
 export class MailchimpDao {
     private mailchimpApiKey = '579e812841299b40988a9bd905d2ac9f-us17';
@@ -34,12 +35,26 @@ export class MailchimpDao {
         return this.mailchimp.get('/lists/' + listId);
     }
 
-    public getCampaigns() {
-        return this.mailchimp.get('/campaigns?count=99999999');
+    public async getTotalCampaignCount () {
+        let total = await this.mailchimp.get('/campaigns');
+        return total['total_items'];
+    }
+
+    public async getCampaigns() {
+        const total = await this.getTotalCampaignCount();
+        return this.mailchimp.get(`/campaigns?count=${total}`);
+    }
+
+    public async queryCampaignsByDate (date) {
+        const time = moment.tz(date, 'Atlantic/Reykjavik').toISOString();
+        const total = await this.getTotalCampaignCount();
+        return this.mailchimp.get(`/campaigns?count=${total}&since_send_time=${time}`);
     }
 
     public async getCampaignsForBooking(bookingCreationDate) {
-        let data = await this.getCampaigns();
+        const fromDate = new Date();
+        fromDate.setHours(new Date().getHours() - 1);
+        let data = await this.queryCampaignsByDate(fromDate);
         let regExp = new RegExp(bookingCreationDate);
         let campaignArray = [];
         for (let i in data['campaigns']) {
@@ -68,41 +83,36 @@ export class MailchimpDao {
         if (listData.lists.length > 0) {
             return listData.lists[0];
         }
-        // for (let i = 0; i < listData.lists.length; i++) {
-        //     const list = listData.lists[i];
-        //     const regexp = new RegExp(customer.email);
-        //     if (regexp.test(list.name)) {
-        //         return list;
-        //     }
-        // };
+
         let listObj = {
-            "name": customer.email + '_subscribedTo_' + contact.name,
-            "contact":{
-                "company":customer.firstName + '_' + customer.lastName,
-                "address1": contact.address,
-                "address2": "",
-                "city": "",
-                "state": "",
-                "zip": "",
-                "country": "",
-                "phone": ""
+            'name': customer.email + '_subscribedTo_' + contact.name,
+            'contact': {
+                'company': customer.firstName + '_' + customer.lastName,
+                'address1': contact.address,
+                'address2': '',
+                'city': '',
+                'state': '',
+                'zip': '',
+                'country': '',
+                'phone': ''
             },
-            "permission_reminder": "Mailchimp generated",
-            "campaign_defaults": {
-                "from_name": contact.name,
-                "from_email": contact.email,
-                "subject": "",
-                "language": "en"
+            'permission_reminder': 'Mailchimp generated',
+            'campaign_defaults': {
+                'from_name': contact.name,
+                'from_email': contact.email,
+                'subject': '',
+                'language': 'en'
             },
-            "email_type_option":true
-        }
+            'email_type_option': true
+        };
+
         let campaignList = await this.createList(listObj);
         try {
             await this.mailchimp.post('/lists/' + campaignList.id + '/members', {
-                "email_address": customer.email,
-                "status": "subscribed"
-            })
-        } catch(err) {
+                'email_address': customer.email,
+                'status': 'subscribed'
+            });
+        } catch (err) {
             return Promise.reject(err);
 
         }
@@ -118,7 +128,7 @@ export class MailchimpDao {
         },
          type: 'regular',
          settings: {
-            title: "Mailchimp api test",                        mandatory
+            title: 'Mailchimp api test',                        mandatory
             template_id: 1309,                                  mandatory
             from_name: 'Jacek',                                 mandatory
             reply_to: 'jacek.bednarczyk.softiti@gmail.com',     mandatory
@@ -177,7 +187,7 @@ export class MailchimpDao {
     }
 
     /**
-     * {"schedule_time":"2017-02-04T19:13:00+00:00","timewarp":"false","batch_delay":"false"}
+     * {'schedule_time':'2017-02-04T19:13:00+00:00','timewarp':'false','batch_delay':'false'}
      * @param {Object} campaignObject
      * @param {Date} date
      */
@@ -213,11 +223,11 @@ export class MailchimpDao {
     }
 
     public deleteCampaign(campaignId: string) {
-        return this.mailchimp.delete('/campaigns/' + campaignId)
+        return this.mailchimp.delete('/campaigns/' + campaignId);
     }
 
     private async deleteCompleteCampaign (campaignObj) {
-        await this.deleteCampaign(campaignObj.id)
+        await this.deleteCampaign(campaignObj.id);
         return this.mailchimp.delete('/lists/' + campaignObj.recipients.list_id);
     }
 
@@ -276,7 +286,7 @@ export class MailchimpDao {
     }
 
     public removeList (listId) {
-        return this.mailchimp.delete('/lists/' + listId)
+        return this.mailchimp.delete('/lists/' + listId);
     }
 
     public createAndTestCampaign (templateData, emails) {
@@ -287,7 +297,7 @@ export class MailchimpDao {
                         {
                             type: 'regular',
                             settings: {
-                                title: "Test campaign",
+                                title: 'Test campaign',
                                 template_id: Number.parseInt(templateData.templateId),
                                 from_name: 'Test sender',
                                 reply_to: 'mveDevs@gmail.com',

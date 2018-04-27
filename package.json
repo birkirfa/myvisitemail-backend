@@ -46,6 +46,7 @@
     "superagent": "^3.8.1",
     "ts-node": "*",
     "tslint": "^5.8.0",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "moment-timezone": "*"
   }
 }

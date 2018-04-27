@@ -194,34 +194,34 @@ export class CustomerDao extends GenericDao {
             html: 'New template',
             folder_id: ''
         };
-        let list;
-        try {
-            list = await this.mailchimp.createList({
-                "name": createData.contact.name,
-                "contact":{
-                    "company":createData.contact.name,
-                    "address1":createData.contact.address,
-                    "address2":"",
-                    "city":"",
-                    "state":"",
-                    "zip":"",
-                    "country":"",
-                    "phone":""
-                },
-                "permission_reminder":"Mailchimp generated",
-                "campaign_defaults":{
-                    "from_name":createData.contact.name,
-                    "from_email":createData.contact.email,
-                    "subject":"",
-                    "language":"en"
-                },
-                "email_type_option":true
-            });
-        } catch (err) {
-            console.error(err);
-            return;
-        }
-        createData.listId = list.id;
+        // let list;
+        // try {
+        //     list = await this.mailchimp.createList({
+        //         "name": createData.contact.name,
+        //         "contact":{
+        //             "company":createData.contact.name,
+        //             "address1":createData.contact.address,
+        //             "address2":"",
+        //             "city":"",
+        //             "state":"",
+        //             "zip":"",
+        //             "country":"",
+        //             "phone":""
+        //         },
+        //         "permission_reminder":"Mailchimp generated",
+        //         "campaign_defaults":{
+        //             "from_name":createData.contact.name,
+        //             "from_email":createData.contact.email,
+        //             "subject":"",
+        //             "language":"en"
+        //         },
+        //         "email_type_option":true
+        //     });
+        // } catch (err) {
+        //     console.error(err);
+        //     return;
+        // }
+        // createData.listId = list.id;
         const folder = await this.mailchimp.createFolder(createData.contact.name);
         templateData.folder_id = folder.id;
         templateData.name = 'bookedTemplate';
@@ -235,19 +235,23 @@ export class CustomerDao extends GenericDao {
         createData.templateFolderId = folder.id;
         createData.booked = <ITemplateData> {
             templateId: booked.id,
-            html: templateData.html
+            html: templateData.html,
+            toUse: false
         };
         createData['check-in'] = <ITemplateData> {
             templateId: before.id,
-            html: templateData.html
+            html: templateData.html,
+            toUse: false
         };
         createData['check-out'] = <ITemplateData> {
             templateId: after.id,
-            html: templateData.html
+            html: templateData.html,
+            toUse: false
         };
         createData.cancellation = <ITemplateData> {
             templateId: cancel.id,
-            html: templateData.html
+            html: templateData.html,
+            toUse: false
         };
 
         return await super.create(createData);

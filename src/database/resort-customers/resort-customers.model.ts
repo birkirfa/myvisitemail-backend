@@ -49,4 +49,5 @@ export interface ITemplateData {
     templateId: string;
     subject: string;
     html: string;
+    toUse: boolean;
 }

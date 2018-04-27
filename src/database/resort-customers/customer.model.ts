@@ -12,6 +12,9 @@ export class CustomerModel extends BaseModel {
             },
             subject: {
                 type: String
+            },
+            toUse: {
+                type: Boolean
             }
         };
         if (!schemaObj) {

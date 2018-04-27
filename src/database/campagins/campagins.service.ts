@@ -22,11 +22,11 @@ export class CampaginsService {
         const customersToBookingsZip = await this.prepareDataForCampaigns();
 
         // TODO: split into smaller reusable operations + consider using RxJs for async collection processing
-        for(const { customer, bookings } of customersToBookingsZip) {
-            for(const booking of bookings.bokun) {
+        for (const { customer, bookings } of customersToBookingsZip) {
+            for (const booking of bookings.bokun) {
                 console.log(`Creating campaigns for: ${booking.customer.email}`);
 
-                if(!booking.customer.email) {
+                if (!booking.customer.email) {
                     continue;
                 }
 
@@ -40,7 +40,7 @@ export class CampaginsService {
                 let campaigns;
                 try {
                     campaigns = await this.mailchimpDao.getCampaignsForBooking(booking.creationDate);
-                } catch(err) {
+                } catch (err) {
                     throw new Error(`Getting campaigns has failed: ${err.toString()}`);
                 }
 
@@ -49,75 +49,62 @@ export class CampaginsService {
                         continue;
                     }
 
-                    let booked;
-                    try {
-                        booked = await this.mailchimpDao.createCampaign({
-                            recipients: {list_id: campaignList.id},
-                            type: 'regular',
-                            settings: {
+                    if (customer.booked.toUse) {
+                        const sendDate = new Date();
+                        sendDate.setMinutes(new Date().getMinutes() + 5);
+
+                        try {
+                            await performCampaignAction({
                                 title: booking.creationDate + '_booked',
                                 template_id: parseInt(customer.booked.templateId),
                                 from_name: customer.contact.name,
                                 subject_line: (customer.booked.subject ||
                                     'Booking of ' + customer.contact.name + ' produt.'),
                                 reply_to: customer.contact.email
+                            }, campaignList.id, sendDate);
+                        } catch (err) {
+                            if (err.status !== BAD_REQUEST_STATUS) {
+                                throw new Error(`Performing campaign has failed: ${err.toString()}`);
                             }
-                        });
-                    } catch (err) {
-                        throw new Error(`Creating campaign has failed: ${err.toString()}`);
-                    }
-
-                    const sendDate = new Date();
-                    sendDate.setMinutes(new Date().getMinutes() + 5);
-
-                    try {
-                        await this.mailchimpDao.performCampaignAction(booked.id, 'schedule', {
-                            schedule_time: sendDate
-                        });
-                    } catch (err) {
-                        if(err.status !== BAD_REQUEST_STATUS) {
-                            throw new Error(`Performing campaign has failed: ${err.toString()}`);
                         }
                     }
 
-                    const beforeDate = new Date(booking.startDate);
-                    beforeDate.setDate(beforeDate.getDate() - 3);
-                    if (new Date().getTime() < beforeDate.getTime()) {
-                        try {
-                            await this.mailchimpDao.createAndScheduleCampaign({
-                                recipients: {list_id: campaignList.id},
-                                type: 'regular',
-                                settings: {
+                    if (customer['check-in'].toUse) {
+                        const beforeDate = new Date(booking.startDate);
+                        beforeDate.setDate(beforeDate.getDate() - 3);
+                        if (new Date().getTime() < beforeDate.getTime()) {
+                            try {
+                                await performCampaignAction({
                                     title: booking.creationDate + '_check-in',
                                     template_id: parseInt(customer['check-in'].templateId),
                                     from_name: customer.contact.name,
                                     subject_line: (customer['check-in'].subject ||
                                         'Check-in of ' + customer.contact.name + ' produt.'),
                                     reply_to: customer.contact.email
-                                }
-                            }, beforeDate);
-                        } catch (err) {
-                            throw new Error(`Creating and scheduling campaign has failed: ${err.toString()}`);
+                                }, campaignList.id, beforeDate);
+                            } catch (err) {
+                                throw new Error(`Creating and scheduling campaign has failed: ${err.toString()}`);
+                            }
                         }
                     }
-                    const afterDate = new Date(booking.endDate);
-                    afterDate.setDate(afterDate.getDate() + 3);
-                    if (new Date().getTime() < afterDate.getTime()) {
-                        try {
-                            await this.mailchimpDao.createAndScheduleCampaign({
-                                recipients: {list_id: campaignList.id},
-                                type: 'regular',
-                                settings: {
+
+                    if (customer['check-out'].toUse) {
+                        const afterDate = new Date(booking.endDate);
+                        afterDate.setDate(afterDate.getDate() + 3);
+
+                        if (new Date().getTime() < afterDate.getTime()) {
+                            try {
+                                await performCampaignAction({
                                     title: booking.creationDate + '_check-out',
                                     template_id: parseInt(customer['check-out'].templateId),
                                     from_name: customer.contact.name,
                                     subject_line: (customer['check-out'].subject ||
                                         'Check-out of ' + customer.contact.name + ' produt.'),
                                     reply_to: customer.contact.email
-                                }
-                            }, afterDate);
-                        } catch (err) {
-                            throw new Error(`Creating and scheduling campaign has failed: ${err.toString()}`);
+                                }, campaignList.id, afterDate);
+                            } catch (err) {
+                                throw new Error(`Creating and scheduling campaign has failed: ${err.toString()}`);
+                            }
                         }
                     }
                 } else {
@@ -128,43 +115,29 @@ export class CampaginsService {
                         } else {
                             try {
                                 await this.mailchimpDao.deleteCampaign(campaigns[i].settings.id);
-                            } catch(err) {
+                            } catch (err) {
                                 // If campaign is already deleted just continue, throw an error otherwise
-                                if(err.status !== RESOURCE_NOT_FOUND_STATUS) {
+                                if (err.status !== RESOURCE_NOT_FOUND_STATUS) {
                                     throw new Error(`Deleting campaign has failed: ${err.toString()}`);
                                 }
                             }
                         }
                     }
 
-                    if (!has) {
-                        let cancellation;
-                        try {
-                            cancellation = await this.mailchimpDao.createCampaign({
-                                recipients: {list_id: campaignList.id},
-                                type: 'regular',
-                                settings: {
-                                    title: booking.creationDate + '_cancellation',
-                                    template_id: parseInt(customer.cancellation.templateId),
-                                    from_name: customer.contact.name,
-                                    subject_line: (customer.cancellation.subject ||
-                                        'Cancellation of ' + customer.contact.name + ' produt.'),
-                                    reply_to: customer.contact.email
-                                }
-                            });
-                        } catch (err) {
-                            throw new Error(`Creating campaign has failed: ${err.toString()}`);
-                        }
-
+                    if (!has && customer.cancellation.toUse) {
                         const sendDate = new Date();
                         sendDate.setMinutes(new Date().getMinutes() + 5);
-
                         try {
-                            await this.mailchimpDao.performCampaignAction(cancellation.id, 'schedule', {
-                                schedule_time: sendDate
-                            });
+                            await performCampaignAction({
+                                title: booking.creationDate + '_cancellation',
+                                template_id: parseInt(customer.cancellation.templateId),
+                                from_name: customer.contact.name,
+                                subject_line: (customer.cancellation.subject ||
+                                    'Cancellation of ' + customer.contact.name + ' produt.'),
+                                reply_to: customer.contact.email
+                            }, campaignList.id, sendDate);
                         } catch (err) {
-                            if(err.status !== BAD_REQUEST_STATUS) {
+                            if (err.status !== BAD_REQUEST_STATUS) {
                                 throw new Error(`Performing campaign has failed: ${err.toString()}`);
                             }
                         }
@@ -172,6 +145,14 @@ export class CampaginsService {
                 }
             }
         }
+    }
+
+    private performCampaignAction (campaignSettings, campaignListId, sendDate): Promise <any> {
+        return this.mailchimpDao.createAndScheduleCampaign({
+            recipients: {list_id: campaignListId},
+            type: 'regular',
+            settings: campaignSettings
+        }, sendDate);
     }
 
     public async prepareDataForCampaigns () {
@@ -190,7 +171,7 @@ export class CampaginsService {
             }
 
             return customersToBookingsZip;
-        } catch(err) {
+        } catch (err) {
             throw new Error(`Preparing data for campaigns has failed: ${err.toString()}`);
         }
     }
@@ -202,7 +183,7 @@ export class CampaginsService {
             bokunBookings = await this.bokunDao.getActions(customer.APIAccess.bokun)
                 .getBookings();
             // Add other api calls
-        } catch(err) {
+        } catch (err) {
             console.error(`Getting bookings has failed ${err.toString()}`);
         }
 

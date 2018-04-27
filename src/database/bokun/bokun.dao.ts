@@ -1,11 +1,12 @@
 import * as crypto from 'crypto';
 import * as dateFormat from 'dateformat';
 import axios, {AxiosPromise, AxiosRequestConfig} from 'axios';
-import { CustomerDao } from "../resort-customers/resort-customer.dao";
-import { MailchimpDao } from "../mailchimp/mailchimp.dao";
+import { CustomerDao } from '../resort-customers/resort-customer.dao';
+import { MailchimpDao } from '../mailchimp/mailchimp.dao';
+import * as moment from 'moment-timezone';
 
-const BOKUN_DEFAULT_ACCESS_KEY = '5ea8219ba5fe4f7c9e7cf905f9a887f1'; // '639a5e7b041c469b947a72b8e5ee2ba6'
-const BOKUN_DEFAULT_SECRET_KEY = 'dfd0cf6b86ab49918a9e92031d166fa5'; // 'e7f8849d74e34f29b34c857123be7503'
+const BOKUN_DEFAULT_ACCESS_KEY = '639a5e7b041c469b947a72b8e5ee2ba6'; // '639a5e7b041c469b947a72b8e5ee2ba6'
+const BOKUN_DEFAULT_SECRET_KEY = 'e7f8849d74e34f29b34c857123be7503'; // 'e7f8849d74e34f29b34c857123be7503'
 const RESOURCE_NOT_FOUND_STATUS = 404;
 const BAD_REQUEST_STATUS = 400;
 
@@ -52,10 +53,10 @@ export class BokunDAO {
 
     constructor() {
         this.vendorList = [];
-        this.hostname = 'api.bokun.io'// api.bokuntest.com;
-        this.channel = 'myVisitTesting'
+        this.hostname = 'api.bokun.io'; // api.bokuntest.com ;
+        this.channel = 'myVisitTesting';
         this.axios = axios;
-        this.axios.defaults.baseURL = 'https://api.bokun.io'// https://api.bokuntest.com
+        this.axios.defaults.baseURL = 'https://api.bokun.io'; // https://api.bokuntest.com
         this.customerDao = new CustomerDao();
         this.mailchimpDao = new MailchimpDao('');
         // this.allowedMails = [
@@ -136,7 +137,7 @@ export class BokunDAO {
                 const accessKey = customer.APIAccess && customer.APIAccess.bokun.accessKey;
                 const secretKey = customer.APIAccess && customer.APIAccess.bokun.secretKey;
 
-                if(!accessKey || !secretKey) {
+                if (!accessKey || !secretKey) {
                     console.log(`Access keys for customer ${customer.contact.name} are missing`);
                     continue;
                 }
@@ -164,7 +165,7 @@ export class BokunDAO {
             }
 
             return customersToBookingsZip;
-        } catch(err) {
+        } catch (err) {
             throw new Error(`Preparing data for campaigns has failed: ${err.toString()}`);
         }
     }
@@ -172,8 +173,8 @@ export class BokunDAO {
     public async createCampagins() {
         const customersToBookingsZip = await this.prepareDataForCampaigns();
 
-        for(const { customer, bookings } of customersToBookingsZip) {
-            for(const booking of bookings) {
+        for (const { customer, bookings } of customersToBookingsZip) {
+            for (const booking of bookings) {
                 console.log(`Creating campaigns for: ${booking.customer.email}`);
 
                 let campaignList;
@@ -186,7 +187,7 @@ export class BokunDAO {
                 let campaigns;
                 try {
                     campaigns = await this.mailchimpDao.getCampaignsForBooking(booking.creationDate);
-                } catch(err) {
+                } catch (err) {
                     throw new Error(`Getting campaigns has failed: ${err.toString()}`);
                 }
 
@@ -221,7 +222,7 @@ export class BokunDAO {
                             schedule_time: sendDate
                         });
                     } catch (err) {
-                        if(err.status !== BAD_REQUEST_STATUS) {
+                        if (err.status !== BAD_REQUEST_STATUS) {
                             throw new Error(`Performing campaign has failed: ${err.toString()}`);
                         }
                     }
@@ -274,9 +275,9 @@ export class BokunDAO {
                         } else {
                             try {
                                 await this.mailchimpDao.deleteCampaign(campaigns[i].settings.id);
-                            } catch(err) {
+                            } catch (err) {
                                 // If campaign is already deleted just continue, throw an error otherwise
-                                if(err.status !== RESOURCE_NOT_FOUND_STATUS) {
+                                if (err.status !== RESOURCE_NOT_FOUND_STATUS) {
                                     throw new Error(`Deleting campaign has failed: ${err.toString()}`);
                                 }
                             }
@@ -310,7 +311,7 @@ export class BokunDAO {
                                 schedule_time: sendDate
                             });
                         } catch (err) {
-                            if(err.status !== BAD_REQUEST_STATUS) {
+                            if (err.status !== BAD_REQUEST_STATUS) {
                                 throw new Error(`Performing campaign has failed: ${err.toString()}`);
                             }
                         }
@@ -414,11 +415,28 @@ export class BokunDAO {
                 ...accessHeaderCreator.create(axiosHttpOptions.method, axiosHttpOptions.url)
             };
 
+            const fromDate = new Date();
+            fromDate.setHours(new Date().getHours() - 1);
+
+            const creationDateRange = {
+                from: moment.tz(fromDate, 'Atlantic/Reykjavik'),
+                includeLower: true,
+                includeUpper: true,
+                to: moment.tz(new Date(), 'Atlantic/Reykjavik')
+            };
+
             axios(axiosHttpOptions)
                 .then(res => {
                     axiosHttpOptions.data = buildQuery ?
-                        { productIds: [accommodationId], pageSize: res.data.totalHits } :
-                        { pageSize: res.data.totalHits };
+                        {
+                            creationDateRange: creationDateRange,
+                            productIds: [accommodationId],
+                            pageSize: res.data.totalHits
+                        } :
+                        {
+                            creationDateRange: creationDateRange,
+                            pageSize: res.data.totalHits
+                        };
 
                     axios(axiosHttpOptions)
                         .then(resp => resolve(resp.data))

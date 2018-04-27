@@ -60,13 +60,13 @@ app.all('/*', cors(options), (req, res, next) => {
     // }
 });
 
-schedule.scheduleJob('0 * * * *', () => {
-    mailchimp.clearCampaigns()
-        .then(() => bokun.createCampagins())
-        .catch((err) => {
-            console.error(err);
-        });
-});
+// schedule.scheduleJob('0 * * * *', () => {
+//     mailchimp.clearCampaigns()
+//         .then(() => bokun.createCampagins())
+//         .catch((err) => {
+//             console.error(err);
+//         });
+// });
 
 /*mailchimp.clearCampaigns()
     .then(() => bokun.createCampagins())
@@ -74,14 +74,14 @@ schedule.scheduleJob('0 * * * *', () => {
         console.error(err);
     });*/
 
-/*mailchimp.clearCampaigns()
-    .then(() => campaginsService.createCampagins())
-    .then(() => {
-        console.log('done');
-    })
-    .catch((err) => {
-        console.error(err);
-    });*/
+// mailchimp.clearCampaigns()
+//     .then(() => campaginsService.createCampagins())
+//     .then(() => {
+//         console.log('done');
+//     })
+//     .catch((err) => {
+//         console.error(err);
+//     });
 
 
 routes.registerAll();
