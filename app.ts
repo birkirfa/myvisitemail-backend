@@ -74,14 +74,14 @@ app.all('/*', cors(options), (req, res, next) => {
         console.error(err);
     });*/
 
-// mailchimp.clearCampaigns()
-//     .then(() => campaginsService.createCampagins())
-//     .then(() => {
-//         console.log('done');
-//     })
-//     .catch((err) => {
-//         console.error(err);
-//     });
+ mailchimp.clearCampaigns()
+      .then(() => campaginsService.createCampagins())
+     .then(() => {
+         console.log('done');
+     })
+     .catch((err) => {
+         console.error(err);
+     });
 
 
 routes.registerAll();
