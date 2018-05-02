@@ -37,7 +37,7 @@ const options: cors.CorsOptions = {
 
 MongoClient.connect(db.mongoUrl, { useMongoClient: true }, (err) => {
     app.listen(port, () => {
-        console.log(`Mongo db connected and were flying on port: ${port}!`);
+        // console.log(`Mongo db connected and were flying on port: ${port}!`);
     });
 });
 

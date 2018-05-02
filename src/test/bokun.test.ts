@@ -7,13 +7,13 @@ describe ('/Bokun API endpoint', () => {
     let whitListedUrl: string;
 
     before('Setup test data and create authorized origin', (done) => {
-        whitListedUrl = 'http://localhost:4200';
+        whitListedUrl = 'https://myvisitemail.herokuapp.com/';
         done();
     });
 
     describe ('GET /product-list', () => {
         it ('Returns 401 when request is made from an unauthorized origin', (done) => {
-            superAgent.get('http://localhost:8000/bokun/product-list')
+            superAgent.get('https://myvisitemail.herokuapp.com/bokun/product-list')
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
@@ -24,7 +24,7 @@ describe ('/Bokun API endpoint', () => {
         });
 
         it ('Returns 200 when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/bokun/product-list')
+            superAgent.get('https://myvisitemail.herokuapp.com/bokun/product-list')
                 .set('origin', whitListedUrl)
                 .end(function(error, response) {
                     expect(error).to.eql(null);
@@ -39,7 +39,7 @@ describe ('/Bokun API endpoint', () => {
 
     describe ('GET /product-list/items/slug/:listSlug', () => {
         it ('Returns 401 when request is made from an unauthorized origin', (done) => {
-            superAgent.get('http://localhost:8000/bokun//product-list/items/slug/test')
+            superAgent.get('https://myvisitemail.herokuapp.com/bokun//product-list/items/slug/test')
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
@@ -52,7 +52,7 @@ describe ('/Bokun API endpoint', () => {
 
     describe ('GET /product-list/items/:listId', () => {
         it ('Returns 401 when request is made from an unauthorized origin', (done) => {
-            superAgent.get('http://localhost:8000/bokun//product-list/items/testId')
+            superAgent.get('https://myvisitemail.herokuapp.com/bokun//product-list/items/testId')
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);

@@ -34,7 +34,7 @@ describe ('/user API endpoint', () => {
 
     describe ('GET /user', () => {
         it ('Returns 401 when request is made from an unauthorized origin', (done) => {
-            superAgent.get('http://localhost:8000/user')
+            superAgent.get('https://myvisitemail.herokuapp.com/user')
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
@@ -45,7 +45,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Returns 200 when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/user')
+            superAgent.get('https://myvisitemail.herokuapp.com/user')
                 .set('origin', whitListedUrl)
                 .end(function(error, response) {
                     expect(error).to.eql(null);
@@ -60,7 +60,7 @@ describe ('/user API endpoint', () => {
 
     describe ('POST /user', () => {
         it ('Returns 401 when request is made from an unauthorized origin', (done) => {
-            superAgent.post('http://localhost:8000/user')
+            superAgent.post('https://myvisitemail.herokuapp.com/user')
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
@@ -71,7 +71,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Returns 400 with empty data', (done) => {
-            superAgent.post('http://localhost:8000/user')
+            superAgent.post('https://myvisitemail.herokuapp.com/user')
                 .set('origin', whitListedUrl)
                 .send({})
                 .end((error, response) => {
@@ -84,7 +84,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Returns 500 with empty data', (done) => {
-            superAgent.post('http://localhost:8000/user')
+            superAgent.post('https://myvisitemail.herokuapp.com/user')
                 .set('origin', whitListedUrl)
                 .send({
                     eMail: 'someUniqueEmail'
@@ -100,7 +100,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Returns 200 with valid data', (done) => {
-            superAgent.post('http://localhost:8000/user')
+            superAgent.post('https://myvisitemail.herokuapp.com/user')
                 .set('origin', whitListedUrl)
                 .send(testUser)
                 .end((error, response) => {
@@ -123,7 +123,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Logs in with the newly created user', (done) => {
-            superAgent.post('http://localhost:8000/user/login')
+            superAgent.post('https://myvisitemail.herokuapp.com/user/login')
                 .set('origin', whitListedUrl)
                 .send({
                     "password" : "delete",
@@ -148,7 +148,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Fails to log in with the newly created user with wrong password', (done) => {
-            superAgent.post('http://localhost:8000/user/login')
+            superAgent.post('https://myvisitemail.herokuapp.com/user/login')
                 .set('origin', whitListedUrl)
                 .send({
                     "password" : "delete123",
@@ -164,7 +164,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Fails to log in with the newly created user with wrong eMail', (done) => {
-            superAgent.post('http://localhost:8000/user/login')
+            superAgent.post('https://myvisitemail.herokuapp.com/user/login')
                 .set('origin', whitListedUrl)
                 .send({
                     "password" : "delete",
@@ -180,7 +180,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Returns 500 trying to overwrite data', (done) => {
-            superAgent.post('http://localhost:8000/user')
+            superAgent.post('https://myvisitemail.herokuapp.com/user')
                 .set('origin', whitListedUrl)
                 .send(overwriteUser)
                 .end((error, response) => {
@@ -194,7 +194,7 @@ describe ('/user API endpoint', () => {
 
     describe ('PUT /user', () => {
         it ('Returns 400 with empty data', (done) => {
-            superAgent.put('http://localhost:8000/user/'  + testUser['_id'])
+            superAgent.put('https://myvisitemail.herokuapp.com/user/'  + testUser['_id'])
                 .set('origin', whitListedUrl)
                 .send({
                 })
@@ -208,7 +208,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Returns 500 with empty data', (done) => {
-            superAgent.put('http://localhost:8000/user/'  + testUser['_id'])
+            superAgent.put('https://myvisitemail.herokuapp.com/user/'  + testUser['_id'])
                 .set('origin', whitListedUrl)
                 .send({
                     'test': 'test'
@@ -223,7 +223,7 @@ describe ('/user API endpoint', () => {
         });
 
         it ('Returns 200 with valid data', (done) => {
-            superAgent.put('http://localhost:8000/user/' + testUser['_id'])
+            superAgent.put('https://myvisitemail.herokuapp.com/user/' + testUser['_id'])
                 .set('origin', whitListedUrl)
                 .send({
                     firstName: 'test1',
@@ -251,7 +251,7 @@ describe ('/user API endpoint', () => {
 
     describe ('DELETE /user', () => {
         it ('Returns 200 with valid id', (done) => {
-            superAgent.delete('http://localhost:8000/user/' + testUser['_id'])
+            superAgent.delete('https://myvisitemail.herokuapp.com/user/' + testUser['_id'])
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.eql(null);

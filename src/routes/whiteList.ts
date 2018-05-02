@@ -1,7 +1,7 @@
 export class WhiteList {
     private originList = [
-        'http://localhost:4200',
-        'http://194.181.46.30'
+        'http://194.181.46.30',
+        'https://myvisitemail.herokuapp.com/'
     ];
 
     public isAllowed(origin) {

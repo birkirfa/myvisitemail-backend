@@ -29,7 +29,7 @@ describe('/resort customers API endpoint', () => {
 
     describe('GET /resort-customer/all', () => {
         it('Returns 200 (OK) when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/resort-customer/all')
+            superAgent.get('https://myvisitemail.herokuapp.com/resort-customer/all')
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.eql(null);
@@ -44,7 +44,7 @@ describe('/resort customers API endpoint', () => {
 
     describe('GET /resort-customer/detail/:resortId', () => {
         it('Returns 400 when id is not provided', (done) => {
-            superAgent.get('http://localhost:8000/resort-customer/detail')
+            superAgent.get('https://myvisitemail.herokuapp.com/resort-customer/detail')
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
@@ -56,7 +56,7 @@ describe('/resort customers API endpoint', () => {
         });
 
         it('Returns 200 (OK) when provided with existing resort id', (done) => {
-            superAgent.get('http://localhost:8000/resort-customer/detail/1')
+            superAgent.get('https://myvisitemail.herokuapp.com/resort-customer/detail/1')
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.eql(null);

@@ -44,7 +44,7 @@ describe('/file API endpoint', () => {
 
     describe('GET /file', () => {
         it('Returns 200 (OK) when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/file')
+            superAgent.get('https://myvisitemail.herokuapp.com/file')
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.eql(null);
@@ -60,7 +60,7 @@ describe('/file API endpoint', () => {
     describe('GET /file/type/:typeId', () => {
         it('Returns 200 (OK) when provided with existing file type', (done) => {
             const type = FileType.TestFile;
-            superAgent.get('http://localhost:8000/file/type/' + type)
+            superAgent.get('https://myvisitemail.herokuapp.com/file/type/' + type)
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.eql(null);
@@ -75,7 +75,7 @@ describe('/file API endpoint', () => {
 
     describe('POST /file', () => {
         it('Returns 400 (Bad Request) when request is missing file', (done) => {
-            superAgent.post('http://localhost:8000/file')
+            superAgent.post('https://myvisitemail.herokuapp.com/file')
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
@@ -86,7 +86,7 @@ describe('/file API endpoint', () => {
                 });
         });
         it('Returns 201 (Created) when request is made from a whiteListed origin', (done) => {
-            superAgent.post('http://localhost:8000/file')
+            superAgent.post('https://myvisitemail.herokuapp.com/file')
                 .set('origin', whitListedUrl)
                 // .set('Content-Type', 'application/json')
                 .send(testedFile)
@@ -104,7 +104,7 @@ describe('/file API endpoint', () => {
 
     describe('PUT /file', () => {
         it('Returns 400 (Bad Request) when request is missing file', (done) => {
-            superAgent.put('http://localhost:8000/file/')
+            superAgent.put('https://myvisitemail.herokuapp.com/file/')
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
@@ -120,7 +120,7 @@ describe('/file API endpoint', () => {
 
             testedFile.append('_id', idToBeUpdated);
 
-            superAgent.put('http://localhost:8000/file')
+            superAgent.put('https://myvisitemail.herokuapp.com/file')
                 .send(testedFile)
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
@@ -136,7 +136,7 @@ describe('/file API endpoint', () => {
         it('Returns 204 (OK Empty) when request is made from a whiteListed origin', (done) => {
             const idToBeDeleted: string = testedFileId;
 
-            superAgent.delete('http://localhost:8000/file/' + idToBeDeleted)
+            superAgent.delete('https://myvisitemail.herokuapp.com/file/' + idToBeDeleted)
                 .set('origin', whitListedUrl)
                 .end((error, response) => {
                     expect(error).to.eql(null);

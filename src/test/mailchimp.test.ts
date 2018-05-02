@@ -31,7 +31,7 @@ describe ('/mailchimp API endpoint', () => {
 
     describe ('GET mailchimp/<endpoint>', () => {
         it ('Returns 401 when request is made from an unauthorized origin', (done) => {
-            superAgent.get('http://localhost:8000/mailchimp/list')
+            superAgent.get('https://myvisitemail.herokuapp.com/mailchimp/list')
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
@@ -42,7 +42,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Returns 200 to /list when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/mailchimp/list')
+            superAgent.get('https://myvisitemail.herokuapp.com/mailchimp/list')
                 .set('origin', whiteListedUrl)
                 .end(function(error, response) {
                     expect(error).to.eql(null);
@@ -55,7 +55,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Returns 200 to /campaign when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/mailchimp/campaign')
+            superAgent.get('https://myvisitemail.herokuapp.com/mailchimp/campaign')
                 .set('origin', whiteListedUrl)
                 .end(function(error, response) {
                     expect(error).to.eql(null);
@@ -68,7 +68,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Returns 200 to /report when request is made from a whiteListed origin', (done) => {
-            superAgent.get('http://localhost:8000/mailchimp/campaign')
+            superAgent.get('https://myvisitemail.herokuapp.com/mailchimp/campaign')
                 .set('origin', whiteListedUrl)
                 .end(function(error, response) {
                     expect(error).to.eql(null);
@@ -83,7 +83,7 @@ describe ('/mailchimp API endpoint', () => {
 
     describe ('POST /mailchimp/campaign', () => {
         it ('Returns 401 when request is made from an unauthorized origin', (done) => {
-            superAgent.post('http://localhost:8000/mailchimp/campaign')
+            superAgent.post('https://myvisitemail.herokuapp.com/mailchimp/campaign')
                 .end((error, response) => {
                     expect(error).to.not.eql(null);
                     expect(response).to.not.eql(null);
@@ -94,7 +94,7 @@ describe ('/mailchimp API endpoint', () => {
         });
         // nope
         it ('Returns 400 with empty data', (done) => {
-            superAgent.post('http://localhost:8000/mailchimp/campaign')
+            superAgent.post('https://myvisitemail.herokuapp.com/mailchimp/campaign')
                 .set('origin', whiteListedUrl)
                 .send({})
                 .end((error, response) => {
@@ -107,7 +107,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Returns 500 with empty data', (done) => {
-            superAgent.post('http://localhost:8000/mailchimp/campaign')
+            superAgent.post('https://myvisitemail.herokuapp.com/mailchimp/campaign')
                 .set('origin', whiteListedUrl)
                 .send({
                     recipients: {
@@ -124,7 +124,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Returns 200 with valid data', (done) => {
-            superAgent.post('http://localhost:8000/mailchimp/campaign')
+            superAgent.post('https://myvisitemail.herokuapp.com/mailchimp/campaign')
                 .set('origin', whiteListedUrl)
                 .send(testCampaign)
                 .end((error, response) => {
@@ -153,7 +153,7 @@ describe ('/mailchimp API endpoint', () => {
     describe ('Patch /campaign', () => {
 
         it ('Returns 400 with no id', (done) => {
-            superAgent.patch('http://localhost:8000/mailchimp/campaign/')
+            superAgent.patch('https://myvisitemail.herokuapp.com/mailchimp/campaign/')
                 .set('origin', whiteListedUrl)
                 .send({
                 })
@@ -167,7 +167,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Returns 400 with empty data', (done) => {
-            superAgent.patch('http://localhost:8000/mailchimp/campaign/' + testCampaign['id'])
+            superAgent.patch('https://myvisitemail.herokuapp.com/mailchimp/campaign/' + testCampaign['id'])
                 .set('origin', whiteListedUrl)
                 .send({
                 })
@@ -181,7 +181,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Returns 200 with valid data', (done) => {
-            superAgent.patch('http://localhost:8000/mailchimp/campaign/' + testCampaign['id'])
+            superAgent.patch('https://myvisitemail.herokuapp.com/mailchimp/campaign/' + testCampaign['id'])
                 .set('origin', whiteListedUrl)
                 .send({
                     settings: {
@@ -211,7 +211,7 @@ describe ('/mailchimp API endpoint', () => {
         });
 
         it ('Schedules the newly created campaign', (done) => {
-            superAgent.post('http://localhost:8000/mailchimp/campaign/' + testCampaign['id'] + '/schedule')
+            superAgent.post('https://myvisitemail.herokuapp.com/mailchimp/campaign/' + testCampaign['id'] + '/schedule')
                 .set('origin', whiteListedUrl)
                 .send({
                     schedule_time: new Date()
@@ -227,7 +227,7 @@ describe ('/mailchimp API endpoint', () => {
 
     describe ('DELETE /user', () => {
         it ('Returns 200 with valid id', (done) => {
-            superAgent.delete('http://localhost:8000/mailchimp/campaign/' + testCampaign['id'])
+            superAgent.delete('https://myvisitemail.herokuapp.com/mailchimp/campaign/' + testCampaign['id'])
                 .set('origin', whiteListedUrl)
                 .end((error, response) => {
                     expect(error).to.eql(null);
