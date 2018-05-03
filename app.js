@@ -30,8 +30,9 @@ const options = {
     methods: 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
     credentials: true
 };
-// app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json())
+app.use(Express.static(__dirname+'/public'));
 MongoClient.connect(db.mongoUrl, { useMongoClient: true }, (err) => {
     app.listen(port, () => {
         // console.log(`Mongo db connected and were flying on port: ${port}!`);
