@@ -6,10 +6,10 @@
   "scripts": {
     "tsc-watch": "tsc --watch",
     "compile": "tsc",
-    "start": "node dist/app.js",
-    "compileAndRun": "tsc && node dist/app.js",
-    "serve": "tsc && node dist/app.js",
-    "demonRun": "nodemon dist/app.js",
+    "start": "node app.js",
+    "compileAndRun": "tsc && node /app.js",
+    "serve": "tsc && node /app.js",
+    "demonRun": "nodemon /app.js",
     "test": "./node_modules/.bin/mocha --require ts-node/register ./src/test/*.test.ts"
   },
   "repository": {

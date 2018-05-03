@@ -1648,11 +1648,11 @@ module.exports = function(Chart) {
 
 			// var negHalfPI = -0.5 * Math.PI;
 			var datasetStartAngle = opts.startAngle;
-			var distance = arc.hidden ? 0 : scale.getDistanceFromCenterForValue(dataset.data[index]);
+			var ance = arc.hidden ? 0 : scale.getanceFromCenterForValue(dataset.data[index]);
 			var startAngle = datasetStartAngle + (circumference * visibleCount);
 			var endAngle = startAngle + (arc.hidden ? 0 : circumference);
 
-			var resetRadius = animationOpts.animateScale ? 0 : scale.getDistanceFromCenterForValue(dataset.data[index]);
+			var resetRadius = animationOpts.animateScale ? 0 : scale.getanceFromCenterForValue(dataset.data[index]);
 
 			helpers.extend(arc, {
 				// Utility
@@ -1665,7 +1665,7 @@ module.exports = function(Chart) {
 					x: centerX,
 					y: centerY,
 					innerRadius: 0,
-					outerRadius: reset ? resetRadius : distance,
+					outerRadius: reset ? resetRadius : ance,
 					startAngle: reset && animationOpts.animateRotate ? datasetStartAngle : startAngle,
 					endAngle: reset && animationOpts.animateRotate ? datasetStartAngle : endAngle,
 					label: helpers.valueAtIndexOrDefault(labels, index, labels[index])
@@ -3683,11 +3683,11 @@ module.exports = function(Chart) {
 	};
 	// Gets the angle from vertical upright to the point about a centre.
 	helpers.getAngleFromPoint = function(centrePoint, anglePoint) {
-		var distanceFromXCenter = anglePoint.x - centrePoint.x;
-		var distanceFromYCenter = anglePoint.y - centrePoint.y;
-		var radialDistanceFromCenter = Math.sqrt(distanceFromXCenter * distanceFromXCenter + distanceFromYCenter * distanceFromYCenter);
+		var anceFromXCenter = anglePoint.x - centrePoint.x;
+		var anceFromYCenter = anglePoint.y - centrePoint.y;
+		var radialanceFromCenter = Math.sqrt(anceFromXCenter * anceFromXCenter + anceFromYCenter * anceFromYCenter);
 
-		var angle = Math.atan2(distanceFromYCenter, distanceFromXCenter);
+		var angle = Math.atan2(anceFromYCenter, anceFromXCenter);
 
 		if (angle < (-0.5 * Math.PI)) {
 			angle += 2.0 * Math.PI; // make sure the returned angle is in the range of (-PI/2, 3PI/2]
@@ -3695,10 +3695,10 @@ module.exports = function(Chart) {
 
 		return {
 			angle: angle,
-			distance: radialDistanceFromCenter
+			ance: radialanceFromCenter
 		};
 	};
-	helpers.distanceBetweenPoints = function(pt1, pt2) {
+	helpers.anceBetweenPoints = function(pt1, pt2) {
 		return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
 	};
 	helpers.aliasPixel = function(pixelWidth) {
@@ -4191,11 +4191,11 @@ function getIntersectItems(chart, position) {
  * @param chart {Chart} the chart to look at elements from
  * @param position {Point} the point to be nearest to
  * @param intersect {Boolean} if true, only consider items that intersect the position
- * @param distanceMetric {Function} function to provide the distance between points
+ * @param anceMetric {Function} function to provide the ance between points
  * @return {ChartElement[]} the nearest items
  */
-function getNearestItems(chart, position, intersect, distanceMetric) {
-	var minDistance = Number.POSITIVE_INFINITY;
+function getNearestItems(chart, position, intersect, anceMetric) {
+	var minance = Number.POSITIVE_INFINITY;
 	var nearestItems = [];
 
 	parseVisibleItems(chart, function(element) {
@@ -4204,13 +4204,13 @@ function getNearestItems(chart, position, intersect, distanceMetric) {
 		}
 
 		var center = element.getCenterPoint();
-		var distance = distanceMetric(position, center);
+		var ance = anceMetric(position, center);
 
-		if (distance < minDistance) {
+		if (ance < minance) {
 			nearestItems = [element];
-			minDistance = distance;
-		} else if (distance === minDistance) {
-			// Can have multiple items at the same distance in which case we sort by size
+			minance = ance;
+		} else if (ance === minance) {
+			// Can have multiple items at the same ance in which case we sort by size
 			nearestItems.push(element);
 		}
 	});
@@ -4219,11 +4219,11 @@ function getNearestItems(chart, position, intersect, distanceMetric) {
 }
 
 /**
- * Get a distance metric function for two points based on the
+ * Get a ance metric function for two points based on the
  * axis mode setting
  * @param {String} axis the axis mode. x|y|xy
  */
-function getDistanceMetricForAxis(axis) {
+function getanceMetricForAxis(axis) {
 	var useX = axis.indexOf('x') !== -1;
 	var useY = axis.indexOf('y') !== -1;
 
@@ -4238,8 +4238,8 @@ function indexMode(chart, e, options) {
 	var position = getRelativePosition(e, chart);
 	// Default axis for index mode is 'x' to match old behaviour
 	options.axis = options.axis || 'x';
-	var distanceMetric = getDistanceMetricForAxis(options.axis);
-	var items = options.intersect ? getIntersectItems(chart, position) : getNearestItems(chart, position, false, distanceMetric);
+	var anceMetric = getanceMetricForAxis(options.axis);
+	var items = options.intersect ? getIntersectItems(chart, position) : getNearestItems(chart, position, false, anceMetric);
 	var elements = [];
 
 	if (!items.length) {
@@ -4323,8 +4323,8 @@ module.exports = {
 		dataset: function(chart, e, options) {
 			var position = getRelativePosition(e, chart);
 			options.axis = options.axis || 'xy';
-			var distanceMetric = getDistanceMetricForAxis(options.axis);
-			var items = options.intersect ? getIntersectItems(chart, position) : getNearestItems(chart, position, false, distanceMetric);
+			var anceMetric = getanceMetricForAxis(options.axis);
+			var items = options.intersect ? getIntersectItems(chart, position) : getNearestItems(chart, position, false, anceMetric);
 
 			if (items.length > 0) {
 				items = chart.getDatasetMeta(items[0]._datasetIndex).data;
@@ -4367,10 +4367,10 @@ module.exports = {
 		nearest: function(chart, e, options) {
 			var position = getRelativePosition(e, chart);
 			options.axis = options.axis || 'xy';
-			var distanceMetric = getDistanceMetricForAxis(options.axis);
-			var nearestItems = getNearestItems(chart, position, options.intersect, distanceMetric);
+			var anceMetric = getanceMetricForAxis(options.axis);
+			var nearestItems = getNearestItems(chart, position, options.intersect, anceMetric);
 
-			// We have multiple items at the same distance from the event. Now sort by smallest
+			// We have multiple items at the same ance from the event. Now sort by smallest
 			if (nearestItems.length > 1) {
 				nearestItems.sort(function(a, b) {
 					var sizeA = a.getArea();
@@ -6367,7 +6367,7 @@ module.exports = {
 		 * @type Number
 		 */
 		/**
-		 * The distance between each tick.
+		 * The ance between each tick.
 		 * @name INumericTickGenerationOptions#stepSize
 		 * @type Number
 		 * @optional
@@ -7474,17 +7474,17 @@ module.exports = function(Chart) {
 		nearest: function(elements, eventPosition) {
 			var x = eventPosition.x;
 			var y = eventPosition.y;
-			var minDistance = Number.POSITIVE_INFINITY;
+			var minance = Number.POSITIVE_INFINITY;
 			var i, len, nearestElement;
 
 			for (i = 0, len = elements.length; i < len; ++i) {
 				var el = elements[i];
 				if (el && el.hasValue()) {
 					var center = el.getCenterPoint();
-					var d = helpers.distanceBetweenPoints(eventPosition, center);
+					var d = helpers.anceBetweenPoints(eventPosition, center);
 
-					if (d < minDistance) {
-						minDistance = d;
+					if (d < minance) {
+						minance = d;
 						nearestElement = el;
 					}
 				}
@@ -7543,7 +7543,7 @@ module.exports = Element.extend({
 		if (vm) {
 			var pointRelativePosition = helpers.getAngleFromPoint(vm, {x: chartX, y: chartY});
 			var	angle = pointRelativePosition.angle;
-			var distance = pointRelativePosition.distance;
+			var ance = pointRelativePosition.ance;
 
 			// Sanitise angle range
 			var startAngle = vm.startAngle;
@@ -7560,7 +7560,7 @@ module.exports = Element.extend({
 
 			// Check if within the range of the open/close angle
 			var betweenAngles = (angle >= startAngle && angle <= endAngle);
-			var withinRadius = (distance >= vm.innerRadius && distance <= vm.outerRadius);
+			var withinRadius = (ance >= vm.innerRadius && ance <= vm.outerRadius);
 
 			return (betweenAngles && withinRadius);
 		}
@@ -11612,7 +11612,7 @@ module.exports = function(Chart) {
 		 * After finding the largest index and angle we calculate how much we need to remove
 		 * from the shape radius to move the point inwards by that x.
 		 *
-		 * We average the left and right distances to get the maximum shape radius that can fit in the box
+		 * We average the left and right ances to get the maximum shape radius that can fit in the box
 		 * along with labels.
 		 *
 		 * Once we have that, we can find the centre point for the chart, by taking the x text protrusion
@@ -11728,7 +11728,7 @@ module.exports = function(Chart) {
 		ctx.lineWidth = angleLineOpts.lineWidth;
 		ctx.strokeStyle = angleLineOpts.color;
 
-		var outerDistance = scale.getDistanceFromCenterForValue(opts.ticks.reverse ? scale.min : scale.max);
+		var outerance = scale.getanceFromCenterForValue(opts.ticks.reverse ? scale.min : scale.max);
 
 		// Point Label Font
 		var plFont = getPointLabelFontOptions(scale);
@@ -11737,7 +11737,7 @@ module.exports = function(Chart) {
 
 		for (var i = getValueCount(scale) - 1; i >= 0; i--) {
 			if (angleLineOpts.display) {
-				var outerPosition = scale.getPointPosition(i, outerDistance);
+				var outerPosition = scale.getPointPosition(i, outerance);
 				ctx.beginPath();
 				ctx.moveTo(scale.xCenter, scale.yCenter);
 				ctx.lineTo(outerPosition.x, outerPosition.y);
@@ -11747,7 +11747,7 @@ module.exports = function(Chart) {
 
 			if (pointLabelOpts.display) {
 				// Extra 3px out for some label spacing
-				var pointLabelPosition = scale.getPointPosition(i, outerDistance + 5);
+				var pointLabelPosition = scale.getPointPosition(i, outerance + 5);
 
 				// Keep this in loop since we may support array properties here
 				var pointLabelFontColor = valueOrDefault(pointLabelOpts.fontColor, globalDefaults.defaultFontColor);
@@ -11909,7 +11909,7 @@ module.exports = function(Chart) {
 			// Start from the top instead of right, so remove a quarter of the circle
 			return index * angleMultiplier + startAngleRadians;
 		},
-		getDistanceFromCenterForValue: function(value) {
+		getanceFromCenterForValue: function(value) {
 			var me = this;
 
 			if (value === null) {
@@ -11923,16 +11923,16 @@ module.exports = function(Chart) {
 			}
 			return (value - me.min) * scalingFactor;
 		},
-		getPointPosition: function(index, distanceFromCenter) {
+		getPointPosition: function(index, anceFromCenter) {
 			var me = this;
 			var thisAngle = me.getIndexAngle(index) - (Math.PI / 2);
 			return {
-				x: Math.round(Math.cos(thisAngle) * distanceFromCenter) + me.xCenter,
-				y: Math.round(Math.sin(thisAngle) * distanceFromCenter) + me.yCenter
+				x: Math.round(Math.cos(thisAngle) * anceFromCenter) + me.xCenter,
+				y: Math.round(Math.sin(thisAngle) * anceFromCenter) + me.yCenter
 			};
 		},
 		getPointPositionForValue: function(index, value) {
-			return this.getPointPosition(index, this.getDistanceFromCenterForValue(value));
+			return this.getPointPosition(index, this.getanceFromCenterForValue(value));
 		},
 
 		getBasePosition: function() {
@@ -11967,7 +11967,7 @@ module.exports = function(Chart) {
 				helpers.each(me.ticks, function(label, index) {
 					// Don't draw a centre value (if it is minimum)
 					if (index > 0 || tickOpts.reverse) {
-						var yCenterOffset = me.getDistanceFromCenterForValue(me.ticksAsNumbers[index]);
+						var yCenterOffset = me.getanceFromCenterForValue(me.ticksAsNumbers[index]);
 
 						// Draw circular lines around the scale
 						if (gridLineOpts.display && index !== 0) {
@@ -12110,14 +12110,14 @@ function arrayUnique(items) {
  * to create the lookup table. The table ALWAYS contains at least two items: min and max.
  *
  * @param {Number[]} timestamps - timestamps sorted from lowest to highest.
- * @param {String} distribution - If 'linear', timestamps will be spread linearly along the min
+ * @param {String} ribution - If 'linear', timestamps will be spread linearly along the min
  * and max range, so basically, the table will contains only two items: {min, 0} and {max, 1}.
- * If 'series', timestamps will be positioned at the same distance from each other. In this
+ * If 'series', timestamps will be positioned at the same ance from each other. In this
  * case, only timestamps that break the time linearity are registered, meaning that in the
  * best case, all timestamps are linear, the table contains only min and max.
  */
-function buildLookupTable(timestamps, min, max, distribution) {
-	if (distribution === 'linear' || !timestamps.length) {
+function buildLookupTable(timestamps, min, max, ribution) {
+	if (ribution === 'linear' || !timestamps.length) {
 		return [
 			{time: min, pos: 0},
 			{time: max, pos: 1}
@@ -12430,13 +12430,13 @@ module.exports = function(Chart) {
 		position: 'bottom',
 
 		/**
-		 * Data distribution along the scale:
-		 * - 'linear': data are spread according to their time (distances can vary),
-		 * - 'series': data are spread at the same distance from each other.
+		 * Data ribution along the scale:
+		 * - 'linear': data are spread according to their time (ances can vary),
+		 * - 'series': data are spread at the same ance from each other.
 		 * @see https://github.com/chartjs/Chart.js/pull/4507
 		 * @since 2.7.0
 		 */
-		distribution: 'linear',
+		ribution: 'linear',
 
 		/**
 		 * Scale boundary strategy (bypassed by min/max time options)
@@ -12639,7 +12639,7 @@ module.exports = function(Chart) {
 			// PRIVATE
 			me._unit = timeOpts.unit || determineUnitForFormatting(ticks, timeOpts.minUnit, me.min, me.max);
 			me._majorUnit = determineMajorUnit(me._unit);
-			me._table = buildLookupTable(me._timestamps.data, min, max, options.distribution);
+			me._table = buildLookupTable(me._timestamps.data, min, max, options.ribution);
 			me._offsets = computeOffsets(me._table, ticks, min, max, options);
 
 			return ticksFromTimestamps(ticks, me._majorUnit);
@@ -29023,7 +29023,7 @@ function toISOString() {
  * Return a human readable representation of a moment that can
  * also be evaluated to get a new moment which is the same
  *
- * @link https://nodejs.org/dist/latest/docs/api/util.html#util_custom_inspect_function_on_objects
+ * @link https://nodejs.org//latest/docs/api/util.html#util_custom_inspect_function_on_objects
  */
 function inspect () {
     if (!this.isValid()) {
@@ -32992,9 +32992,9 @@ var filter_1 = __webpack_require__("../../../../rxjs/operators/filter.js");
  * var clicksOnDivs = clicks.filter(ev => ev.target.tagName === 'DIV');
  * clicksOnDivs.subscribe(x => console.log(x));
  *
- * @see {@link distinct}
- * @see {@link distinctUntilChanged}
- * @see {@link distinctUntilKeyChanged}
+ * @see {@link inct}
+ * @see {@link inctUntilChanged}
+ * @see {@link inctUntilKeyChanged}
  * @see {@link ignoreElements}
  * @see {@link partition}
  * @see {@link skip}
@@ -33915,9 +33915,9 @@ var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
  * var clicksOnDivs = clicks.filter(ev => ev.target.tagName === 'DIV');
  * clicksOnDivs.subscribe(x => console.log(x));
  *
- * @see {@link distinct}
- * @see {@link distinctUntilChanged}
- * @see {@link distinctUntilKeyChanged}
+ * @see {@link inct}
+ * @see {@link inctUntilChanged}
+ * @see {@link inctUntilKeyChanged}
  * @see {@link ignoreElements}
  * @see {@link partition}
  * @see {@link skip}
@@ -54078,15 +54078,15 @@ var ProviderElementContext = (function () {
     ProviderElementContext.prototype._getQueriesFor = function (token) {
         var /** @type {?} */ result = [];
         var /** @type {?} */ currentEl = this;
-        var /** @type {?} */ distance = 0;
+        var /** @type {?} */ ance = 0;
         var /** @type {?} */ queries;
         while (currentEl !== null) {
             queries = currentEl._contentQueries.get(tokenReference(token));
             if (queries) {
-                result.push.apply(result, queries.filter(function (query) { return query.meta.descendants || distance <= 1; }));
+                result.push.apply(result, queries.filter(function (query) { return query.meta.descendants || ance <= 1; }));
             }
             if (currentEl._directiveAsts.length > 0) {
-                distance++;
+                ance++;
             }
             currentEl = currentEl._parent;
         }
@@ -62869,7 +62869,7 @@ var SCHEMA = [
     ':svg:feConvolveMatrix^:svg:|',
     ':svg:feDiffuseLighting^:svg:|',
     ':svg:feDisplacementMap^:svg:|',
-    ':svg:feDistantLight^:svg:|',
+    ':svg:feantLight^:svg:|',
     ':svg:feDropShadow^:svg:|',
     ':svg:feFlood^:svg:|',
     ':svg:feFuncA^:svg:componentTransferFunction|',
@@ -77247,7 +77247,7 @@ var DefaultIterableDiffer = (function () {
                 nextRemove;
             var /** @type {?} */ adjPreviousIndex = getPreviousIndex(record, addRemoveOffset, moveOffsets);
             var /** @type {?} */ currentIndex = record.currentIndex;
-            // consume the item, and adjust the addRemoveOffset and update moveDistance if necessary
+            // consume the item, and adjust the addRemoveOffset and update moveance if necessary
             if (record === nextRemove) {
                 addRemoveOffset--;
                 nextRemove = nextRemove._nextRemoved;
@@ -92184,7 +92184,7 @@ var DomAdapter = (function () {
      * @param {?} el
      * @return {?}
      */
-    DomAdapter.prototype.getDistributedNodes = function (el) { };
+    DomAdapter.prototype.getributedNodes = function (el) { };
     /**
      * @abstract
      * @param {?} node
@@ -92606,7 +92606,7 @@ var GenericBrowserDomAdapter = (function (_super) {
      * @param {?} el
      * @return {?}
      */
-    GenericBrowserDomAdapter.prototype.getDistributedNodes = function (el) { return ((el)).getDistributedNodes(); };
+    GenericBrowserDomAdapter.prototype.getributedNodes = function (el) { return ((el)).getributedNodes(); };
     /**
      * @param {?} el
      * @param {?} baseUrl
