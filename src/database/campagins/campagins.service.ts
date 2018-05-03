@@ -54,7 +54,7 @@ export class CampaginsService {
                         sendDate.setMinutes(new Date().getMinutes() + 5);   // set schedule date to 5 minutes from now
 
                         try {
-                            await performCampaignAction({
+                            await this.performCampaignAction({
                                 title: booking.creationDate + '_booked',
                                 template_id: parseInt(customer.booked.templateId),
                                 from_name: customer.contact.name,
@@ -74,7 +74,7 @@ export class CampaginsService {
                         beforeDate.setDate(beforeDate.getDate() - 3);    // set schedule date to 3 days before check-in
                         if (new Date().getTime() < beforeDate.getTime()) {
                             try {
-                                await performCampaignAction({
+                                await this.performCampaignAction({
                                     title: booking.creationDate + '_check-in',
                                     template_id: parseInt(customer['check-in'].templateId),
                                     from_name: customer.contact.name,
@@ -94,7 +94,7 @@ export class CampaginsService {
 
                         if (new Date().getTime() < afterDate.getTime()) {
                             try {
-                                await performCampaignAction({
+                                await this.performCampaignAction({
                                     title: booking.creationDate + '_check-out',
                                     template_id: parseInt(customer['check-out'].templateId),
                                     from_name: customer.contact.name,
@@ -128,7 +128,7 @@ export class CampaginsService {
                         const sendDate = new Date();
                         sendDate.setMinutes(new Date().getMinutes() + 5);    // set schedule date to 5 minutes from now
                         try {
-                            await performCampaignAction({
+                            await this.performCampaignAction({
                                 title: booking.creationDate + '_cancellation',
                                 template_id: parseInt(customer.cancellation.templateId),
                                 from_name: customer.contact.name,

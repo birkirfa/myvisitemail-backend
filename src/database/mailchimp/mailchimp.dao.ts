@@ -4,7 +4,7 @@ import { IResortCustomerTemplate } from '../resort-customers/resort-customers.mo
 import * as moment from 'moment-timezone';
 
 export class MailchimpDao {
-    private mailchimpApiKey = '579e812841299b40988a9bd905d2ac9f-us17';
+    private mailchimpApiKey = '18840b9db28b4010714c424e4202d0ed-us17';
     private mailchimp: Mailchimp;
 
     constructor(apiKey?: string) {
@@ -200,7 +200,7 @@ export class MailchimpDao {
                         schedule_time: date
                     })
                     .then(resolve)
-                    .error(reject);
+                    .catch(reject);
                 });
         });
 
