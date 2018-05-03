@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const path = require('path');
 const Express = require("express");
 const db_1 = require("./config/db");
 const MongoClient = require("mongoose");
@@ -32,7 +33,7 @@ const options = {
 };
 // app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(bodyParser.json())
-app.use(Express.static(path.join(__dirname, '/public')));
+app.use(Express.static(path.join(__dirname , '/public')));
 MongoClient.connect(db.mongoUrl, { useMongoClient: true }, (err) => {
     app.listen(port, () => {
         // console.log(`Mongo db connected and were flying on port: ${port}!`);
