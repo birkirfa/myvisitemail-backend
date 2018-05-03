@@ -40,7 +40,7 @@ MongoClient.connect(db.mongoUrl, { useMongoClient: true }, (err) => {
 const routes = new routes_1.RoutesManager(app);
 app.get('/', (req, res) => {
     if (MongoClient.connection.readyState === 1) {
-        res.sendFile('/public/index.html')
+        res.sendFile('public/index.html')
     }
     else {
         res.status(500).send('MongoDB is DOWN');
