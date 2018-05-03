@@ -50,6 +50,6 @@
     "moment-timezone": "*"
   },
   "engines": {
-    "node": "0.10.11"
+    "node": "*"
 }
 }
