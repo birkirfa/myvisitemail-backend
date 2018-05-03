@@ -33,7 +33,7 @@ const options = {
 };
 // app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(bodyParser.json())
-app.use(Express.static(process.env.PWD + '/public'));
+app.use(Express.static(process.env.PWD + '/'));
 MongoClient.connect(db.mongoUrl, { useMongoClient: true }, (err) => {
     app.listen(port, () => {
         // console.log(`Mongo db connected and were flying on port: ${port}!`);
