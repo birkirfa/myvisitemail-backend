@@ -1,34 +1,21 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-exports.__esModule = true;
-var base_model_1 = require("../base.model");
-var RemovedCustomerModel = /** @class */ (function (_super) {
-    __extends(RemovedCustomerModel, _super);
-    function RemovedCustomerModel(schemaObj) {
-        var _this = this;
+Object.defineProperty(exports, "__esModule", { value: true });
+const base_model_1 = require("../base.model");
+class RemovedCustomerModel extends base_model_1.BaseModel {
+    constructor(schemaObj) {
         if (!schemaObj) {
-            var fullModel = {
+            const fullModel = {
                 removedDate: {
                     type: Number,
                     required: true
                 }
             };
-            _this = _super.call(this, fullModel) || this;
+            super(fullModel);
         }
         else {
-            _this = _super.call(this, schemaObj) || this;
+            super(schemaObj);
         }
-        return _this;
     }
-    return RemovedCustomerModel;
-}(base_model_1.BaseModel));
+}
 exports.RemovedCustomerModel = RemovedCustomerModel;
+//# sourceMappingURL=removed-customer.model.js.map

@@ -1,13 +1,13 @@
 "use strict";
-exports.__esModule = true;
-var MongoClient = require("mongoose");
-var BaseModel = /** @class */ (function () {
-    function BaseModel(schemaObj) {
+Object.defineProperty(exports, "__esModule", { value: true });
+const MongoClient = require("mongoose");
+class BaseModel {
+    constructor(schemaObj) {
         this.schema = new MongoClient.Schema(schemaObj);
     }
-    BaseModel.prototype.getSchema = function () {
+    getSchema() {
         return this.schema;
-    };
-    return BaseModel;
-}());
+    }
+}
 exports.BaseModel = BaseModel;
+//# sourceMappingURL=base.model.js.map

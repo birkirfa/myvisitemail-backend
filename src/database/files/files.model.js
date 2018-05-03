@@ -1,20 +1,9 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-exports.__esModule = true;
-var base_model_1 = require("../base.model");
-var FileModel = /** @class */ (function (_super) {
-    __extends(FileModel, _super);
-    function FileModel(schemaObj) {
-        return _super.call(this, (schemaObj || {
+Object.defineProperty(exports, "__esModule", { value: true });
+const base_model_1 = require("../base.model");
+class FileModel extends base_model_1.BaseModel {
+    constructor(schemaObj) {
+        super((schemaObj || {
             id: {
                 type: String,
                 required: true
@@ -31,10 +20,9 @@ var FileModel = /** @class */ (function (_super) {
                 type: String,
                 required: false
             }
-        })) || this;
+        }));
     }
-    return FileModel;
-}(base_model_1.BaseModel));
+}
 exports.FileModel = FileModel;
 var FileType;
 (function (FileType) {
@@ -45,3 +33,4 @@ var FileType;
     FileType[FileType["Other"] = 4] = "Other";
     FileType[FileType["TestFile"] = 5] = "TestFile";
 })(FileType = exports.FileType || (exports.FileType = {}));
+//# sourceMappingURL=files.model.js.map

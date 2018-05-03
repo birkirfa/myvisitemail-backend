@@ -1,15 +1,15 @@
 "use strict";
-exports.__esModule = true;
-var user_route_1 = require("./user.route");
-var files_route_1 = require("./files.route");
-var mailchimp_route_1 = require("./mailchimp.route");
-var resort_customers_route_1 = require("./resort-customers.route");
-var bokun_route_1 = require("./bokun-route");
-var RoutesManager = /** @class */ (function () {
-    function RoutesManager(app) {
+Object.defineProperty(exports, "__esModule", { value: true });
+const user_route_1 = require("./user.route");
+const files_route_1 = require("./files.route");
+const mailchimp_route_1 = require("./mailchimp.route");
+const resort_customers_route_1 = require("./resort-customers.route");
+const bokun_route_1 = require("./bokun-route");
+class RoutesManager {
+    constructor(app) {
         this.app = app;
     }
-    RoutesManager.prototype.registerAll = function () {
+    registerAll() {
         this.app.use('/file', new files_route_1.FilesRoute().router);
         this.app.use('/user', new user_route_1.UserRoute().router);
         this.app.use('/mailchimp', new mailchimp_route_1.MailchimpRoute().router);
@@ -21,7 +21,7 @@ var RoutesManager = /** @class */ (function () {
         this.app.use('/mongo/mailchimp', new mailchimp_route_1.MailchimpRoute().router);
         this.app.use('/mongo/resort-customer', new resort_customers_route_1.ResortCustomersRoute().router);
         this.app.use('/mongo/bokun', new bokun_route_1.BokunRoute().router);
-    };
-    return RoutesManager;
-}());
+    }
+}
 exports.RoutesManager = RoutesManager;
+//# sourceMappingURL=routes.js.map

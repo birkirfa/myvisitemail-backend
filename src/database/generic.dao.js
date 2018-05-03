@@ -1,8 +1,8 @@
 "use strict";
-exports.__esModule = true;
-var MongoClient = require("mongoose");
-var GenericDao = /** @class */ (function () {
-    function GenericDao(schema, modelName) {
+Object.defineProperty(exports, "__esModule", { value: true });
+const MongoClient = require("mongoose");
+class GenericDao {
+    constructor(schema, modelName) {
         try {
             this.Model = MongoClient.model(modelName);
         }
@@ -10,69 +10,67 @@ var GenericDao = /** @class */ (function () {
             this.Model = MongoClient.model(modelName, schema);
         }
     }
-    GenericDao.prototype.getModel = function () {
+    getModel() {
         return this.Model;
-    };
-    GenericDao.prototype.getAll = function () {
+    }
+    getAll() {
         return this.Model.find({}).exec();
-    };
-    GenericDao.prototype.queryAll = function (queryObj) {
+    }
+    queryAll(queryObj) {
         return this.Model.find(queryObj).exec();
-    };
-    GenericDao.prototype.querySingle = function (queryObj) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.Model.findOne(queryObj).then(resolve)["catch"](reject);
+    }
+    querySingle(queryObj) {
+        return new Promise((resolve, reject) => {
+            this.Model.findOne(queryObj).then(resolve).catch(reject);
         });
-    };
-    GenericDao.prototype.create = function (createData) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            var obj = new _this.Model(createData);
-            obj.save().then(resolve)["catch"](reject);
+    }
+    create(createData) {
+        return new Promise((resolve, reject) => {
+            const obj = new this.Model(createData);
+            obj.save().then(resolve).catch(reject);
         });
-    };
-    GenericDao.prototype.createWithUniqueCheck = function (createData, queryObj) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.querySingle(queryObj)
-                .then(function (response) {
+    }
+    createWithUniqueCheck(createData, queryObj) {
+        return new Promise((resolve, reject) => {
+            this.querySingle(queryObj)
+                .then((response) => {
                 if (response) {
                     reject('Key duplication detected');
                 }
                 else {
-                    var obj = new _this.Model(createData);
-                    obj.save().then(resolve)["catch"](reject);
+                    let obj = new this.Model(createData);
+                    obj.save().then(resolve).catch(reject);
                 }
-            })["catch"](reject);
+            })
+                .catch(reject);
         });
-    };
-    GenericDao.prototype.update = function (itemId, updateData) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.Model.findById(itemId)
-                .then(function (item) {
-                for (var key in updateData) {
+    }
+    update(itemId, updateData) {
+        return new Promise((resolve, reject) => {
+            this.Model.findById(itemId)
+                .then((item) => {
+                for (let key in updateData) {
                     if (!item[key] && item[key] !== 0) { // carefull around falsy values
                         reject('Attempted to update a non existeny property.');
                         return;
                     }
                 }
                 item.set(updateData);
-                item.save().then(resolve)["catch"](reject);
-            })["catch"](function (err) {
+                item.save().then(resolve).catch(reject);
+            })
+                .catch(err => {
                 console.error(err);
                 reject(err);
                 ;
             });
         });
-    };
-    GenericDao.prototype.remove = function (itemId) {
+    }
+    remove(itemId) {
         return this.Model.findOneAndRemove({ _id: itemId }).exec();
-    };
-    GenericDao.prototype.removeByCustomId = function (itemId) {
+    }
+    removeByCustomId(itemId) {
         return this.Model.findOneAndRemove({ id: itemId }).exec();
-    };
-    return GenericDao;
-}());
+    }
+}
 exports.GenericDao = GenericDao;
+//# sourceMappingURL=generic.dao.js.map

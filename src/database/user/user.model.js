@@ -1,37 +1,26 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-exports.__esModule = true;
-var base_model_1 = require("../base.model");
-var bcrypt = require("bcryptjs");
-var SALT_WORK_FACTOR = 10;
-var UserModel = /** @class */ (function (_super) {
-    __extends(UserModel, _super);
-    function UserModel(schemaObj) {
-        var _this = _super.call(this, (schemaObj || {
+Object.defineProperty(exports, "__esModule", { value: true });
+const base_model_1 = require("../base.model");
+const bcrypt = require("bcryptjs");
+const SALT_WORK_FACTOR = 10;
+class UserModel extends base_model_1.BaseModel {
+    constructor(schemaObj) {
+        super((schemaObj || {
             firstName: {
                 type: String,
-                required: true
+                required: true,
             },
             lastName: {
                 type: String,
-                required: true
+                required: true,
             },
             password: {
                 type: String,
-                required: true
+                required: true,
             },
             isAdmin: {
                 type: Boolean,
-                required: true
+                required: true,
             },
             eMail: {
                 type: String,
@@ -41,9 +30,9 @@ var UserModel = /** @class */ (function (_super) {
                 type: String,
                 required: true
             }
-        })) || this;
-        _this.getSchema().pre('save', function (next) {
-            console.log('save', _this);
+        }));
+        this.getSchema().pre('save', (next) => {
+            console.log('save', this);
             console.log('save - next', next);
             // const user: IUser = this;
             // // only hash the password if it has been modified (or is new)
@@ -66,10 +55,9 @@ var UserModel = /** @class */ (function (_super) {
             //         next(err);
             //     });
         });
-        _this.getSchema().methods.comparePassword = function (candidate) {
-            var _this = this;
-            return new Promise(function (resolve, reject) {
-                bcrypt.compare(candidate, _this.password, function (err, isMatch) {
+        this.getSchema().methods.comparePassword = function (candidate) {
+            return new Promise((resolve, reject) => {
+                bcrypt.compare(candidate, this.password, (err, isMatch) => {
                     if (err) {
                         reject(err);
                     }
@@ -77,8 +65,7 @@ var UserModel = /** @class */ (function (_super) {
                 });
             });
         };
-        return _this;
     }
-    return UserModel;
-}(base_model_1.BaseModel));
+}
 exports.UserModel = UserModel;
+//# sourceMappingURL=user.model.js.map

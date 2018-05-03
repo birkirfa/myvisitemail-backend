@@ -1,29 +1,30 @@
 "use strict";
-exports.__esModule = true;
-var Express = require("express");
-var user_dao_1 = require("../database/user/user.dao");
-var bodyParser = require("body-parser");
-var UserRoute = /** @class */ (function () {
-    function UserRoute() {
-        var _this = this;
+Object.defineProperty(exports, "__esModule", { value: true });
+const Express = require("express");
+const user_dao_1 = require("../database/user/user.dao");
+const bodyParser = require("body-parser");
+class UserRoute {
+    constructor() {
         this.jsonParser = bodyParser.json();
         this.dao = new user_dao_1.UserDao();
         this.router = Express.Router();
-        this.router.get('/', function (req, res) {
-            _this.dao.getAll()
-                .then(function (users) {
+        this.router.get('/', (req, res) => {
+            this.dao.getAll()
+                .then((users) => {
                 res.status(200).json(users);
-            })["catch"](function (error) {
+            })
+                .catch((error) => {
                 res.status(500).send('Database error.');
             });
         });
-        this.router.post('/', this.jsonParser, function (req, res) {
-            var createData = req.body;
+        this.router.post('/', this.jsonParser, (req, res) => {
+            const createData = req.body;
             if (Object.keys(createData).length && createData.eMail) {
-                _this.dao.createWithUniqueCheck(createData, { eMail: createData.eMail })
-                    .then(function (response) {
+                this.dao.createWithUniqueCheck(createData, { eMail: createData.eMail })
+                    .then(response => {
                     res.status(200).json(response);
-                })["catch"](function (error) {
+                })
+                    .catch(error => {
                     res.status(500).json(error);
                 });
             }
@@ -31,17 +32,18 @@ var UserRoute = /** @class */ (function () {
                 res.status(400).send('Insufficient data.');
             }
         });
-        this.router.put('/', function (req, res) {
+        this.router.put('/', (req, res) => {
             res.status(400).send('Missing userId parameter.');
         });
-        this.router.put('/:userId', this.jsonParser, function (req, res) {
-            var id = req.params.userId;
-            var updateData = req.body;
+        this.router.put('/:userId', this.jsonParser, (req, res) => {
+            const id = req.params.userId;
+            const updateData = req.body;
             if (Object.keys(updateData).length) {
-                _this.dao.update(id, updateData)
-                    .then(function (response) {
+                this.dao.update(id, updateData)
+                    .then(response => {
                     res.status(200).json(response);
-                })["catch"](function (error) {
+                })
+                    .catch(error => {
                     res.status(500).json(error);
                 });
             }
@@ -49,15 +51,16 @@ var UserRoute = /** @class */ (function () {
                 res.status(400).send('Insufficient data.');
             }
         });
-        this.router.post('/login', this.jsonParser, function (req, res) {
-            var userCandidate = req.body;
+        this.router.post('/login', this.jsonParser, (req, res) => {
+            const userCandidate = req.body;
             if (Object.keys(userCandidate).length) {
                 if (userCandidate.eMail) {
                     if (userCandidate.password) {
-                        _this.dao.login(userCandidate.eMail, userCandidate.password)
-                            .then(function (logged) {
+                        this.dao.login(userCandidate.eMail, userCandidate.password)
+                            .then((logged) => {
                             res.status(200).json(logged);
-                        })["catch"](function (error) {
+                        })
+                            .catch((error) => {
                             res.status(500).send(error || 'Wrong credentials.');
                         });
                     }
@@ -70,18 +73,19 @@ var UserRoute = /** @class */ (function () {
                 }
             }
         });
-        this.router["delete"]('/', function (req, res) {
+        this.router.delete('/', (req, res) => {
             res.status(400).send('Missing userId parameter.');
         });
-        this.router["delete"]('/:userId', function (req, res) {
-            _this.dao.remove(req.params.userId)
-                .then(function (response) {
+        this.router.delete('/:userId', (req, res) => {
+            this.dao.remove(req.params.userId)
+                .then(response => {
                 res.status(200).json('User ' + response.firstName + ' deleted');
-            })["catch"](function (error) {
+            })
+                .catch(error => {
                 res.status(500).json(error);
             });
         });
     }
-    return UserRoute;
-}());
+}
 exports.UserRoute = UserRoute;
+//# sourceMappingURL=user.route.js.map

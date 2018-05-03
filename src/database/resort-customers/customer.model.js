@@ -1,21 +1,9 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-exports.__esModule = true;
-var base_model_1 = require("../base.model");
-var CustomerModel = /** @class */ (function (_super) {
-    __extends(CustomerModel, _super);
-    function CustomerModel(schemaObj) {
-        var _this = this;
-        var templateData = {
+Object.defineProperty(exports, "__esModule", { value: true });
+const base_model_1 = require("../base.model");
+class CustomerModel extends base_model_1.BaseModel {
+    constructor(schemaObj) {
+        const templateData = {
             templateId: {
                 type: String
             },
@@ -30,34 +18,34 @@ var CustomerModel = /** @class */ (function (_super) {
             }
         };
         if (!schemaObj) {
-            var fullModel = {
+            const fullModel = {
                 contact: {
                     name: {
                         type: String,
-                        required: true
+                        required: true,
                     },
                     email: {
                         type: String,
-                        required: true
+                        required: true,
                     },
                     phone: {
                         type: String,
-                        required: true
+                        required: true,
                     },
                     address: {
                         type: String,
-                        required: true
+                        required: true,
                     }
                 },
                 area: {
                     type: String,
-                    required: true
+                    required: true,
                 },
                 type: {
                     type: String
                 },
                 invoice: {
-                    type: Number
+                    type: Number,
                 },
                 rooms: {
                     type: Number
@@ -93,17 +81,16 @@ var CustomerModel = /** @class */ (function (_super) {
                         required: true
                     },
                     updateDate: {
-                        type: Number
+                        type: Number,
                     }
                 }
             };
-            _this = _super.call(this, fullModel) || this;
+            super(fullModel);
         }
         else {
-            _this = _super.call(this, schemaObj) || this;
+            super(schemaObj);
         }
-        return _this;
     }
-    return CustomerModel;
-}(base_model_1.BaseModel));
+}
 exports.CustomerModel = CustomerModel;
+//# sourceMappingURL=customer.model.js.map
