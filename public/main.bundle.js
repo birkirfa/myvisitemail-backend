@@ -479,7 +479,7 @@ var ApiRequestsInterceptor = /** @class */ (function () {
     ApiRequestsInterceptor.prototype.intercept = function (req, next) {
         // adds baseUrl in case of relative paths
         if (req.url.indexOf('http') < 0) {
-            req = req.clone({ url: "" + __WEBPACK_IMPORTED_MODULE_1__environments_environment__["a" /* environment */].baseUrl + req.url });
+            req = req.clone({ url: "" + __WEBPACK_IMPORTED_MODULE_1__environments_environment__["a" /* environment */].origin + req.url });
         }
         if (!req.headers.has('Content-Type')) {
             if (req.body && req.body instanceof FormData === false) {
@@ -4168,7 +4168,7 @@ function getErrorMessage(error) {
 var environment = {
     production: false,
     origin: 'https://myvisitemail.herokuapp.com/',
-    baseUrl: 'http://194.181.46.30/mongo/',
+    // baseUrl: 'http://194.181.46.30/mongo/',
     bokunUrl: 'https://bokun.github.io/',
     mailChimpUrl: 'https://us6.api.mailchimp.com/3.0/' // todo: set proper url
 };
