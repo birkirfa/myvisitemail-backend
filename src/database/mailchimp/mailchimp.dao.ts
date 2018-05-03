@@ -24,7 +24,7 @@ export class MailchimpDao {
     }
 
     public getLists(): Promise<IMailLists> {
-        return this.mailchimp.get('/lists?email=birkir@ysland.is');
+        return this.mailchimp.get('/lists?email=${email}');
     }
 
     public getListsByEmail(email: string): Promise<IMailLists> {
