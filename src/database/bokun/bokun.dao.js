@@ -10,12 +10,9 @@ const BOKUN_DEFAULT_ACCESS_KEY = '639a5e7b041c469b947a72b8e5ee2ba6'; // '639a5e7
 const BOKUN_DEFAULT_SECRET_KEY = 'e7f8849d74e34f29b34c857123be7503'; // 'e7f8849d74e34f29b34c857123be7503'
 const RESOURCE_NOT_FOUND_STATUS = 404;
 const BAD_REQUEST_STATUS = 400;
-
-
 export interface IAccessHeaderCreator {
-create(method: string, path: string): any;
-}
-
+    create(method: string, path: string): any;
+    }
 class BokunAccessHeaderCreator {
     constructor(accessKey = BOKUN_DEFAULT_ACCESS_KEY, secretKey = BOKUN_DEFAULT_SECRET_KEY) {
         this.accessKey = accessKey;
