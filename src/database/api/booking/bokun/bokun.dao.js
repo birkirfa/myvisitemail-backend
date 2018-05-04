@@ -9,6 +9,9 @@ class BokunAccessHeaderCreator {
     constructor(accessKey = DEFAULT_ACCESS_KEY, secretKey = DEFAULT_SECRET_KEY) {
         this.accessKey = accessKey;
         this.secretKey = secretKey;
+    export interface IAccessHeaderCreator {
+create(method: string, path: string): any;
+}
     }
     encodeSignature(date, method, path) {
         return crypto.createHmac('sha1', this.secretKey)
